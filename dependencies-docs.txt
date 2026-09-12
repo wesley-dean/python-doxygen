@@ -1,0 +1,2 @@
+# Documentation publication dependencies are intentionally deferred until after
+# milestone 1.  See the implementation handoff and future publication ADRs.
