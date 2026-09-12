@@ -31,9 +31,12 @@ integration suite now exercises that configuration directly.  See
 
 ## Yields translation
 
-Milestone 1 leaves `:yields:` unchanged rather than equating generator yields with
-ordinary return semantics.  A later structured representation requires evidence
-and an updated or superseding decision.  See
+ADR-003 now governs `:yields:` as a dedicated Doxygen `Yields` paragraph rather
+than return documentation.  The representation may add one physical output line
+per translated yields field because Doxygen requires the paragraph title and body
+to be separate for the intended structure; other supported structured fields
+continue to preserve line count.  Continuation prose remains byte-preserved when
+Doxygen can retain its association without extra translator state.  See
 [ADR-003](adr/ADR-003-define-yields-translation.md).
 
 ## Versioned consumer artifact
