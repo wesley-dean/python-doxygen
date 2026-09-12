@@ -49,18 +49,21 @@ See [ADR-005](adr/ADR-005-use-small-behavior-focused-fixtures.md).
 
 ADR-006 directs the repository to adopt the applicable Make, regression-test,
 pinned documentation dependency, generated ADR navigation, Doxygen reference,
-and Pages-publication patterns from `awk-doxygen` and `bash-doxygen`.  The
-Make-driven semantic suite and separate Python/Doxygen integration path are the
-first implemented pieces; networked documentation dependency preparation and
-Pages publication remain governed follow-on work.  Sibling interfaces without a
-coherent Python purpose, such as `--compact`, are deliberately not copied.  See
+and Pages-publication patterns from `awk-doxygen` and `bash-doxygen`.  Those
+patterns are now represented by Make-driven source/dist testing, a separate
+Python/Doxygen integration fixture, `bashdeps`-managed documentation dependencies,
+generated ADR navigation, reference-document generation, documentation canaries,
+and Pages deployment.  Sibling interfaces without a coherent Python purpose,
+such as `--compact`, are deliberately not copied.  See
 [ADR-006](adr/ADR-006-adopt-sibling-build-test-and-documentation-infrastructure.md).
 
-## Release publication and exact-asset canaries
+## Release publication and downstream pinning
 
-ADR-007 requires release automation to validate maintained source and generated
-bytes, verify the release checksum, publish the exact filter and checksum, and
-canary those published bytes through Doxygen.  That decision supersedes only
-ADR-004's milestone-1 release-publication deferral; the existing release workflow
-remains to be brought into conformance with the decision.  See
+ADR-007 requires semantic-version releases to publish the tested
+`doxygen-python.awk` artifact and its SHA-256 checksum as public release assets.
+Downstream repositories pin a specific version, public release URL, and digest in
+their `bashdeps` manifests; their builds retrieve and verify those exact bytes
+without GitHub authentication or version discovery.  Release-artifact canaries
+may independently verify publication packaging, but they are not part of the
+downstream dependency-resolution path.  See
 [ADR-007](adr/ADR-007-publish-and-canary-exact-release-artifacts.md).
