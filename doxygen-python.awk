@@ -5,7 +5,8 @@
 ## Preserves Python source and rewrites only governed structured fields inside
 ## conservatively recognized docstrings.  This is an intentionally small
 ## documentation translator, not a complete Python parser.  See ADR-001,
-## ADR-002, and ADR-009 before widening recognition or representation behavior.
+## ADR-002, ADR-003, and ADR-009 before widening recognition or representation
+## behavior.
 
 ## @rule initialize_filter
 ## @brief Initializes parser state and consumes the `--strict` option.
@@ -225,7 +226,9 @@ function closes_same_line(line,    s, width, rest) {
 ## @details
 ## Preserves indentation, recognizes only governed Sphinx field forms, and
 ## returns the original line whenever no safe translation exists.  Malformed
-## governed fields are diagnosed and left unchanged.
+## governed fields are diagnosed and left unchanged.  ADR-003 permits a yields
+## translation to contain one embedded newline so Doxygen receives a titled
+## paragraph followed by its body.
 ##
 ## @param line Physical docstring line to inspect.
 ## @local indent Leading horizontal whitespace preserved in translated output.
@@ -273,6 +276,13 @@ function translate_doc_line(line,    indent, body, name, desc, exc) {
         return indent "@exception " exc (desc == "" ? "" : " " desc)
     }
     if (body ~ /^:raises([ \t]|:|$)/) { warn("malformed :raises field"); return line }
+    if (body ~ /^:yields:[ \t]*/) {
+        desc = body
+        sub(/^:yields:[ \t]*/, "", desc)
+        if (desc == "") { warn("malformed :yields field"); return line }
+        return indent "@par Yields\n" indent desc
+    }
+    if (body ~ /^:yields([ \t]|$)/) { warn("malformed :yields field"); return line }
     return line
 }
 
