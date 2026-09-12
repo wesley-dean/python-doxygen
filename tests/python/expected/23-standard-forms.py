@@ -17,8 +17,8 @@ class Service:
 def decorated(value):
     """Return a decorated value.
 
-    :param value: Value to return.
-    :returns: The supplied value.
+    @param value Value to return.
+    @return The supplied value.
     """
     return value
 
@@ -26,8 +26,8 @@ def decorated(value):
 async def fetch(value):
     """Return a value from an async function.
 
-    :param value: Value to return.
-    :returns: The supplied value.
+    @param value Value to return.
+    @return The supplied value.
     """
     return value
 
@@ -35,7 +35,8 @@ async def fetch(value):
 def values():
     """Yield values from a generator.
 
-    :yields: One generated value.
+    @par Yields
+    One generated value.
     """
     yield "value"
 
@@ -44,7 +45,8 @@ def values():
 def managed_resource(resource):
     """Yield a resource while its context is active.
 
-    :param resource: Resource exposed inside the context.
-    :yields: The active resource.
+    @param resource Resource exposed inside the context.
+    @par Yields
+    The active resource.
     """
     yield resource
