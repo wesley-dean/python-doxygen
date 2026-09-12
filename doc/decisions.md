@@ -17,9 +17,11 @@ documentation.  See
 
 ## Doxygen-facing representation
 
-ADR-002 is intentionally pending the required Doxygen experiment.  The preferred
-model is source-preserving Python with translated field contents, but it must not
-be accepted until generated Doxygen output proves that representation works.
+Doxygen successfully parsed the source-preserving experiment and generated XML
+containing translated prose, parameter, return, and exception documentation.  The
+filter therefore preserves Python declarations and docstrings while translating
+only supported field lines.  See
+[ADR-002](adr/ADR-002-preserve-python-and-translate-docstrings.md).
 
 ## Yields translation
 
