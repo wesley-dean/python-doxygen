@@ -96,6 +96,31 @@ for expected in "$ROOT_DIR"/tests/python/diagnostics/*.err; do
     printf 'ok - diagnostic: %s\n' "$name"
 done
 
+malformed_yields="$TMP_DIR/malformed-yields.py"
+{
+    printf '%s\n' 'def values():'
+    printf '%s\n' '    """Document values.'
+    printf '%s\n' ''
+    printf '%s%s\n' '    :yi' 'elds:'
+    printf '%s\n' '    """'
+    printf '%s\n' '    return None'
+} >"$malformed_yields"
+warning_err="$TMP_DIR/malformed-yields.warning.err"
+strict_err="$TMP_DIR/malformed-yields.strict.err"
+normalized="$TMP_DIR/malformed-yields.normalized.err"
+if ! "$AWK_BIN" -f "$FILTER" -- "$malformed_yields" >"$TMP_DIR/malformed-yields.warning.py" 2>"$warning_err"; then
+    fail 'non-strict malformed yields case exited non-zero'
+fi
+normalize_warnings "$warning_err" >"$normalized"
+printf '%s\n' 'malformed :yields field' | diff -u - "$normalized" || fail 'malformed yields warning mismatch'
+if "$AWK_BIN" -f "$FILTER" -- --strict "$malformed_yields" >"$TMP_DIR/malformed-yields.strict.py" 2>"$strict_err"; then
+    fail 'strict malformed yields case exited zero'
+fi
+normalize_warnings "$strict_err" >"$normalized"
+printf '%s\n' 'malformed :yields field' | diff -u - "$normalized" || fail 'strict malformed yields warning mismatch'
+CASE_COUNT=$((CASE_COUNT + 1))
+printf '%s\n' 'ok - diagnostic: malformed yields field'
+
 runtime="$TMP_DIR/08-runtime-triple-string.py"
 grep -Fq ':param fake: This is data, not documentation.' "$runtime" || \
     fail 'runtime triple-quoted string was rewritten'
