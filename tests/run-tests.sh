@@ -23,6 +23,10 @@ normalize_warnings() {
     sed 's/^.*: warning: //' "$1"
 }
 
+expected_line_expansion() {
+    grep -Ec '^[[:space:]]*:yields:[[:space:]]*[^[:space:]].*$' "$1" || true
+}
+
 for expected in "$ROOT_DIR"/tests/python/expected/*.py; do
     name=${expected##*/}
     input="$ROOT_DIR/tests/python/fixtures/$name"
@@ -37,8 +41,9 @@ for expected in "$ROOT_DIR"/tests/python/expected/*.py; do
     diff -u "$expected" "$actual" || fail "output mismatch: $name"
 
     expected_lines=$(wc -l <"$input" | tr -d ' ')
+    expected_lines=$((expected_lines + $(expected_line_expansion "$input")))
     actual_lines=$(wc -l <"$actual" | tr -d ' ')
-    test "$actual_lines" -eq "$expected_lines" || fail "line count changed: $name"
+    test "$actual_lines" -eq "$expected_lines" || fail "unexpected line-count change: $name"
 
     CASE_COUNT=$((CASE_COUNT + 1))
     printf 'ok - output: %s\n' "$name"
@@ -58,8 +63,9 @@ for expected in "$ROOT_DIR"/tests/python/programs-expected/*.py; do
     diff -u "$expected" "$actual" || fail "program output mismatch: $name"
 
     expected_lines=$(wc -l <"$input" | tr -d ' ')
+    expected_lines=$((expected_lines + $(expected_line_expansion "$input")))
     actual_lines=$(wc -l <"$actual" | tr -d ' ')
-    test "$actual_lines" -eq "$expected_lines" || fail "program line count changed: $name"
+    test "$actual_lines" -eq "$expected_lines" || fail "unexpected program line-count change: $name"
 
     CASE_COUNT=$((CASE_COUNT + 1))
     printf 'ok - program: %s\n' "$name"
