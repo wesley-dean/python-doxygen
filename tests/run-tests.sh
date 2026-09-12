@@ -24,7 +24,7 @@ normalize_warnings() {
 }
 
 expected_line_expansion() {
-    grep -Ec '^[[:space:]]*:yields:[[:space:]]*[^[:space:]].*$' "$1" || true
+    grep -Ec '^[[:space:]]*:(yields|rtype):[[:space:]]*[^[:space:]].*$|^[[:space:]]*:type[[:space:]]+[^:[:space:]]+:[[:space:]]*[^[:space:]].*$' "$1" || true
 }
 
 for expected in "$ROOT_DIR"/tests/python/expected/*.py; do
