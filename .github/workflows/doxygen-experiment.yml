@@ -1,9 +1,7 @@
 name: Doxygen Python representation experiment
 
 on:
-  push:
-    branches:
-      - issue-3-python-doxygen-milestone-1
+  pull_request:
   workflow_dispatch:
 
 permissions:
