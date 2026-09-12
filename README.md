@@ -136,16 +136,18 @@ doxygen-python.awk.sha256
 ```
 
 These release assets are the dependency interface for downstream repositories.
-A downstream project can pin a specific `python-doxygen` version with `bashdeps`
-using the release URL and the SHA-256 digest of the published filter.  This keeps
-the consumer dependency tied to exact released bytes rather than to a moving
-branch or repository checkout.
+A downstream project pins a specific `python-doxygen` version in its `bashdeps`
+manifest using that version's public release-asset URL and the SHA-256 digest of
+the published filter.  During the downstream build, `bashdeps` downloads those
+exact public bytes and verifies the digest before use.  Consumption therefore
+requires neither version discovery nor GitHub authentication.
 
 The versioning workflow validates maintained source, builds and tests the exact
 distribution artifact, generates and verifies its checksum, exercises the
-release candidate through Doxygen, publishes both assets, then downloads and
-checks the exact published bytes again.  A release canary also exercises
-published Python-filter bytes through the Python/Doxygen integration fixture.
+release candidate through Doxygen, and publishes both files as release assets.
+A release-artifact canary may independently download the public released files,
+verify the checksum, and exercise the Python filter through the same Doxygen
+integration fixture.
 
 ## Documentation and governance
 
