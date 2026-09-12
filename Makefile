@@ -90,6 +90,10 @@ test-doxygen:
 	grep -R -q 'description continues' "$(INTEGRATION_OUT)/xml"
 	grep -R -q 'before the source is exhausted' "$(INTEGRATION_OUT)/xml"
 	grep -R -q 'description also continues' "$(INTEGRATION_OUT)/xml"
+	grep -R -q '<title>Type of path</title>' "$(INTEGRATION_OUT)/xml"
+	grep -R -q 'pathlib.Path' "$(INTEGRATION_OUT)/xml"
+	grep -R -q '<title>Return type</title>' "$(INTEGRATION_OUT)/xml"
+	grep -R -q 'Configuration' "$(INTEGRATION_OUT)/xml"
 
 ## Generate the SHA-256 checksum for the exact consumer artifact.
 checksums: build
