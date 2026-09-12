@@ -6,6 +6,12 @@ Date: 2026-09-11
 
 Accepted
 
+## Supersession Note
+
+ADR-007 supersedes only this ADR's milestone-1 deferral of release publication.
+The maintained-source name, generated artifact name, checksum name, comment-only
+provenance requirement, and source/dist parity requirements remain governing.
+
 ## Context
 
 Consumers need one inspectable filter artifact whose bytes can be tested and
@@ -25,8 +31,9 @@ change record-processing behavior.
 
 The same semantic regression suite SHALL run against maintained source and the
 built artifact.  The generated `dist/` directory remains untracked build state.
-Release publication is outside milestone 1 and SHALL NOT be represented as
-implemented merely because the artifact contract exists.
+Release publication was outside milestone 1 and was not implemented merely by
+establishing this artifact contract; ADR-007 subsequently governs release
+publication of the tested artifact and checksum.
 
 ## Alternatives Considered
 
@@ -36,11 +43,12 @@ metadata were rejected because provenance must not alter runtime semantics.
 
 ## Consequences
 
-Local development and future release automation share one canonical build path.
-Any build transformation is tested for semantic parity before the artifact is
+Local development and release automation share one canonical build path.  Any
+build transformation is tested for semantic parity before the artifact is
 considered usable.
 
 ## Related Decisions
 
 - ADR-000 governs capability claims.
 - ADR-005 requires source and dist parity in the regression suite.
+- ADR-007 governs release publication and exact released-artifact validation.
