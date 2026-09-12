@@ -1,6 +1,7 @@
 def values():
     """Yield documented values.
 
-    :yields: Values produced by the generator.
+    @par Yields
+    Values produced by the generator.
     """
     yield "value"
