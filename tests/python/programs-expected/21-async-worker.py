@@ -25,7 +25,8 @@ async def stream_records(records):
     Yield records without assigning return semantics to generator output.
 
     @param records Iterable of records to emit.
-    :yields: One record at a time.
+    @par Yields
+    One record at a time.
     """
     for record in records:
         await asyncio.sleep(0)
