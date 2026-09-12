@@ -13,8 +13,8 @@ ADRs.
 ## Governing Documentation
 
 Before changing the repository, review `README.md`, this file,
-`doc/documentation-standard.md`, the canonical AWK documentation standard, every
-ADR in `doc/adr/*.md`, and `doc/decisions.md`.
+`doc/documentation-standard.md`, the canonical Python and AWK documentation
+standards, every ADR in `doc/adr/*.md`, and `doc/decisions.md`.
 
 Accepted ADRs are governance.  Consequential parser, interface, portability,
 compatibility, or release changes require an ADR unless existing governance
@@ -22,11 +22,13 @@ already covers the decision.
 
 ## Documentation Standards
 
-`doc/documentation-standard.md` is synchronized from
-`wesley-dean/coding_standards/standards/python/documentation-standard.md`.  Do not
-edit the synchronized copy locally.
+The authoritative Python standard is
+`wesley-dean/coding_standards/standards/python/documentation-standard.md`.
+`doc/documentation-standard.md` records this repository's adoption point until
+synchronization through the standards repository is added.  Do not independently
+rewrite the canonical contract here.
 
-The AWK filter follows
+The AWK filter follows the authoritative AWK standard at
 `wesley-dean/coding_standards/standards/awk/documentation-standard.md`.
 
 ## Architecture and Scope
@@ -40,7 +42,9 @@ unsupported syntax to speculative semantic claims.  Do not add signature
 validation, type inference, inferred behavior, broad decorator semantics, or
 complete Python parsing without explicit governance.
 
-`:yields:` is outside milestone 1 until ADR-003 establishes its representation.
+`:yields:` is outside milestone 1 under ADR-003.  The source-preserving Doxygen
+representation remains provisional until Proposed ADR-002 is proven by the
+integration experiment and accepted.
 
 ## Portability and Testing
 
