@@ -26,6 +26,11 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
+      - name: Install release validation tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes curl doxygen mawk
+
       - name: calculate version
         id: calculate-version
         uses: bitshifted/git-auto-semver@c4e8f005e839f822325356f141939cf6c76b5701 # pin@v1
@@ -33,6 +38,28 @@ jobs:
           create_tag: true
           initial_version: 0.0.1
           tag_prefix: v
+
+      - name: Validate maintained source
+        run: make test-source AWK_BIN=mawk
+
+      - name: Build and validate release artifact
+        run: |
+          make test-dist \
+            AWK_BIN=mawk \
+            VERSION="${{ steps.calculate-version.outputs.version-string }}"
+
+      - name: Exercise release candidate through Doxygen
+        run: |
+          make test-doxygen \
+            AWK_BIN=mawk \
+            DOXYGEN_PYTHON_FILTER=dist/doxygen-python.awk
+
+      - name: Generate and verify release checksum
+        run: |
+          make checksums \
+            VERSION="${{ steps.calculate-version.outputs.version-string }}"
+          cd dist
+          sha256sum -c doxygen-python.awk.sha256
 
       - name: Generate release notes
         id: release-notes
@@ -51,3 +78,33 @@ jobs:
           tag_name: "v${{ steps.calculate-version.outputs.version-string }}"
           draft: false
           prerelease: false
+          files: |
+            dist/doxygen-python.awk
+            dist/doxygen-python.awk.sha256
+
+      - name: Download exact published release assets
+        env:
+          RELEASE_TAG: v${{ steps.calculate-version.outputs.version-string }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          mkdir -p .release-canary
+          base="https://github.com/${REPOSITORY}/releases/download/${RELEASE_TAG}"
+          curl --fail --location --silent --show-error \
+            --retry 5 --retry-all-errors --retry-delay 2 \
+            "${base}/doxygen-python.awk" \
+            --output .release-canary/doxygen-python.awk
+          curl --fail --location --silent --show-error \
+            --retry 5 --retry-all-errors --retry-delay 2 \
+            "${base}/doxygen-python.awk.sha256" \
+            --output .release-canary/doxygen-python.awk.sha256
+
+      - name: Verify exact published release bytes
+        run: |
+          cd .release-canary
+          sha256sum -c doxygen-python.awk.sha256
+
+      - name: Exercise exact published release through Doxygen
+        run: |
+          make test-doxygen \
+            AWK_BIN=mawk \
+            DOXYGEN_PYTHON_FILTER=.release-canary/doxygen-python.awk
