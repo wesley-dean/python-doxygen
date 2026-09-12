@@ -1,5 +1,14 @@
 #!/usr/bin/awk -f
+## @file doxygen-python.awk
+## @brief Translates supported Python docstring fields for Doxygen.
+## @details
+## Preserves Python source and rewrites only governed structured fields inside
+## conservatively recognized docstrings.  This is an intentionally small
+## documentation translator, not a complete Python parser.  See ADR-001 and the
+## Proposed ADR-002 before widening recognition or representation behavior.
 
+## @rule initialize_filter
+## @brief Initializes parser state and consumes the `--strict` option.
 BEGIN {
     strict = 0
     diagnostics = 0
@@ -16,35 +25,59 @@ BEGIN {
     }
 }
 
+## @fn leading_width(line)
+## @brief Returns the leading indentation width of a source line.
+## @param line Source line to inspect.
+## @returns Number of leading space and tab bytes.
 function leading_width(line,    s) {
     s = line
     sub(/[^ \t].*$/, "", s)
     return length(s)
 }
 
+## @fn warn(message)
+## @brief Records and emits one translation diagnostic.
+## @param message Stable diagnostic text.
+## @returns No meaningful value.
 function warn(message) {
     diagnostics++
     printf "%s:%d: warning: %s\n", FILENAME, FNR, message > "/dev/stderr"
 }
 
+## @fn is_blank_or_comment(line)
+## @brief Tests for input that may precede a suite's first statement.
+## @param line Source line to inspect.
+## @returns One for blank or comment-only input; zero otherwise.
 function is_blank_or_comment(line,    s) {
     s = line
     sub(/^[ \t]*/, "", s)
     return (s == "" || s ~ /^#/)
 }
 
+## @fn is_declaration(line)
+## @brief Recognizes milestone-1 class and function declaration headers.
+## @param line Source line to inspect.
+## @returns One for a supported declaration header; zero otherwise.
 function is_declaration(line,    s) {
     s = line
     sub(/^[ \t]*/, "", s)
     return (s ~ /^(async[ \t]+)?def[ \t]+[A-Za-z_][A-Za-z0-9_]*[ \t]*\(/ || s ~ /^class[ \t]+[A-Za-z_][A-Za-z0-9_]*/)
 }
 
+## @fn starts_docstring(line)
+## @brief Tests for an unprefixed triple-double-quoted string start.
+## @param line Source line to inspect.
+## @returns One when the first non-whitespace bytes open the supported form.
 function starts_docstring(line,    s) {
     s = line
     sub(/^[ \t]*/, "", s)
     return (substr(s, 1, 3) == "\"\"\"")
 }
 
+## @fn closes_same_line(line)
+## @brief Tests whether a recognized docstring closes on its opening line.
+## @param line Recognized docstring start line.
+## @returns One when a second delimiter occurs on the line; zero otherwise.
 function closes_same_line(line,    s, rest) {
     s = line
     sub(/^[ \t]*/, "", s)
@@ -53,6 +86,10 @@ function closes_same_line(line,    s, rest) {
     return (index(rest, "\"\"\"") > 0)
 }
 
+## @fn translate_doc_line(line)
+## @brief Translates one supported structured field inside a docstring.
+## @param line Physical docstring line to inspect.
+## @returns Translated text, or original text when no safe translation exists.
 function translate_doc_line(line,    indent, body, name, desc, exc) {
     indent = line
     sub(/[^ \t].*$/, "", indent)
@@ -87,6 +124,8 @@ function translate_doc_line(line,    indent, body, name, desc, exc) {
     return line
 }
 
+## @rule translate_source_record
+## @brief Passes source through and translates fields in recognized docstrings.
 {
     line = $0
     if (in_docstring) {
@@ -121,6 +160,8 @@ function translate_doc_line(line,    indent, body, name, desc, exc) {
     print line
 }
 
+## @rule finalize_filter
+## @brief Diagnoses unfinished state and enforces strict-mode failure.
 END {
     if (in_docstring) warn("unterminated recognized docstring")
     if (strict && diagnostics > 0) exit 1
