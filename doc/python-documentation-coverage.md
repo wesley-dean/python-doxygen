@@ -10,11 +10,8 @@ coverage and implementation work; it does not redefine the standard.
 
 - **Supported** means focused regression coverage exists and the filter provides
   the documented Doxygen-facing behavior.
-- **Partial** means some governed forms work, but standards-conforming cases are
-  still outside the supported boundary.
 - **Pass-through** means source remains visible without structured Doxygen
   translation.
-- **Planned** means issue #5 requires a governed implementation or experiment.
 - **Delegated** means the concern intentionally remains with Python-native tools
   rather than the Doxygen filter.
 
@@ -35,40 +32,36 @@ coverage and implementation work; it does not redefine the standard.
 | `:param name:` | Supported | Retain; adjacent continuation prose remains unchanged | ADR-001, ADR-003; focused continuation fixture |
 | `:returns:` | Supported | Retain; adjacent continuation prose remains unchanged | ADR-001, ADR-003; focused continuation fixture |
 | `:raises ExceptionType:` | Supported | Retain; adjacent continuation prose remains unchanged | ADR-001, ADR-003; focused continuation fixture |
-| `:yields:` | Supported | Translate to a dedicated Doxygen `Yields` paragraph | ADR-003; representation experiment and focused fixture |
-| Structured-field continuation prose | Supported for governed fields | Preserve unchanged while Doxygen retains paragraph association | ADR-003; representation experiment and focused fixture |
-| `:type name:` for intentionally unannotated interfaces | Pass-through | Experiment and decide whether Doxygen translation adds faithful value | Decision pending |
-| `:rtype:` for intentionally unannotated interfaces | Pass-through | Experiment and decide whether Doxygen translation adds faithful value | Decision pending |
+| `:yields:` | Supported | Translate to a dedicated Doxygen `Yields` paragraph | ADR-003; representation experiment, semantic fixture, and Doxygen integration |
+| Structured-field continuation prose | Supported for governed fields | Preserve unchanged while Doxygen retains paragraph association | ADR-003; focused and Doxygen integration fixtures |
+| `:type name:` for intentionally unannotated interfaces | Supported | Translate to a dedicated `Type of name` paragraph; do not validate whether the field is redundant with annotations | ADR-010; focused and Doxygen integration fixtures |
+| `:rtype:` for intentionally unannotated interfaces | Supported | Translate to a dedicated `Return type` paragraph; do not infer or validate signature types | ADR-010; focused and Doxygen integration fixtures |
 | Descriptive prose, notes, warnings, examples | Supported pass-through | Retain visible source; translate only where an explicit representation is governed | ADR-002 |
-| Properties | Uses ordinary decorated-function recognition when declaration form is supported | Add focused fixtures and Doxygen evidence; no special parser semantics unless evidence requires them | Tests pending |
-| Async functions | Supported for governed single-line and multi-line declarations | Add representative standard-form integration evidence | ADR-009; focused fixtures |
-| Generators | Function docstrings and governed `:yields:` translation supported | Add representative scenario coverage | ADR-003; focused fixture |
-| Context managers | Function docstrings recognized when declaration form is supported | Add focused fixtures; generator/yield semantics handled separately | Tests pending |
-| Decorated functions and methods | Declaration recognition survives preceding decorator lines | Add focused fixtures for representative standard forms; avoid broad decorator inference | ADR-001, ADR-009 |
+| Properties | Supported through ordinary decorated-function recognition | No special parser semantics | ADR-009; standard-form fixture and Doxygen integration |
+| Async functions | Supported for governed single-line and multi-line declarations | Retain | ADR-009; focused, scenario, and standard-form fixtures |
+| Generators | Supported with governed `:yields:` translation | Retain | ADR-003; focused, scenario, and standard-form fixtures |
+| Context managers | Supported through ordinary decorated-function recognition and governed yield translation | No special decorator inference | ADR-003, ADR-009; standard-form fixture and Doxygen integration |
+| Decorated functions and methods | Supported when the underlying declaration form is governed | Retain conservative decorator-agnostic recognition | ADR-001, ADR-009; standard-form fixture and Doxygen integration |
 | Parameter/signature agreement | Delegated | Keep with Python-native tooling such as Pylint | ADR-001, ADR-009 |
 | Return / exception inference | Delegated | Do not infer undocumented contracts | ADR-000, ADR-001 |
-| Type inference | Delegated | Do not infer types; translate only maintained type documentation if governed | ADR-000, ADR-001 |
-| Source-line correspondence | Supported except governed yields expansion | Preserve physical line count except the one-line-per-yields exception in ADR-003 | ADR-002, ADR-003 |
-| Ambiguous or unsupported markup | Visible pass-through | Retain conservative pass-through rather than guessing | ADR-000, ADR-001 |
+| Type inference and type-field redundancy checks | Delegated | Translate maintained type fields only; do not infer or reconcile types | ADR-000, ADR-010 |
+| Source-line correspondence | Supported except governed titled-paragraph expansion | Preserve physical line count except one added line for each translated `:yields:`, `:type`, or `:rtype:` field | ADR-002, ADR-003, ADR-010 |
+| Ambiguous or unsupported markup | Visible pass-through | Retain conservative pass-through rather than guessing | ADR-000, ADR-001, ADR-009 |
 
-## Implementation order
+## Resulting boundary
 
-Issue #5 proceeds in layers so the parser boundary and generated representation
-remain independently reviewable:
+Issue #5 closes the gap between the milestone-1 filter and the canonical Python
+documentation standard without turning the AWK filter into a Python parser or
+linter.  Standards-conforming maintained source can use ordinary or raw
+docstrings, conventional multi-line declarations, the governed structured fields,
+and representative property, async, generator, context-manager, and decorated
+function forms without learning a second Doxygen-specific authoring dialect.
 
-1. broaden docstring recognition only as governed by ADR-009;
-2. add focused fixtures for raw docstrings, deterministic one-line docstrings,
-   multiline declarations, and runtime-string non-regression;
-3. establish and govern `:yields:` and structured-field continuation behavior by
-   Doxygen experiment under ADR-003;
-4. run isolated experiments for `:type name:` and `:rtype:` before deciding
-   whether translation adds faithful value;
-5. add focused semantic fixtures and Doxygen XML assertions for each accepted
-   representation;
-6. extend the scenario-level program regressions to combine the newly governed
-   behavior; and
-7. update README capability claims only after source, distribution, and Doxygen
-   integration tests demonstrate the resulting contract.
+The remaining exclusions are intentional boundaries rather than unfinished issue
+#5 work.  Unsupported string prefixes and lexically ambiguous source remain
+visible.  Signature/documentation agreement, type correctness, redundancy between
+annotations and `:type:` / `:rtype:`, decorator semantics, and other program
+analysis remain with Python-native tooling.
 
 ## Non-goals
 
