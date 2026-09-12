@@ -86,6 +86,10 @@ test-doxygen:
 	grep -R -q 'Return the current lifecycle status' "$(INTEGRATION_OUT)/xml"
 	grep -R -q 'Windows path to normalize' "$(INTEGRATION_OUT)/xml"
 	grep -R -q 'The normalized Windows path' "$(INTEGRATION_OUT)/xml"
+	grep -R -q '<title>Yields</title>' "$(INTEGRATION_OUT)/xml"
+	grep -R -q 'description continues' "$(INTEGRATION_OUT)/xml"
+	grep -R -q 'before the source is exhausted' "$(INTEGRATION_OUT)/xml"
+	grep -R -q 'description also continues' "$(INTEGRATION_OUT)/xml"
 
 ## Generate the SHA-256 checksum for the exact consumer artifact.
 checksums: build
