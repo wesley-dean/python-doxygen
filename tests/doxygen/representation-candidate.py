@@ -15,10 +15,11 @@ def iter_records(path):
 def load_unannotated(path):
     """Load one unannotated value.
 
-    Type information intentionally remains prose in this experiment because the
-    representation for Sphinx :type: and :rtype: fields has not been decided.
-
     @param path Path to read.
+    @par Type of path
+        pathlib.Path
     @return Loaded value.
+    @par Return type
+        Configuration
     """
     return path
