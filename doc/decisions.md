@@ -9,11 +9,15 @@ about uncertainty and must not present itself as a complete Python parser.  See
 
 ## Supported Python documentation scope
 
-Milestone 1 recognizes only conservatively identifiable triple-double-quoted
-module, class, function, and method docstrings and translates three structured
-field forms.  Ambiguous strings remain source rather than being guessed to be
-documentation.  See
-[ADR-001](adr/ADR-001-define-supported-python-documentation-scope.md).
+ADR-001 established the milestone-1 boundary: conservatively identifiable
+triple-double-quoted module, class, function, and method docstrings with three
+structured field translations.  ADR-009 supersedes only the portions of that
+boundary covering raw-prefix recognition, deterministic one-line prose docstrings,
+and single-physical-line declaration headers; ADR-001 remains authoritative for
+its conservative documentation-position, runtime-string, diagnostic, and
+structured-field rules until separately superseded.  See
+[ADR-001](adr/ADR-001-define-supported-python-documentation-scope.md) and
+[ADR-009](adr/ADR-009-expand-standards-conforming-docstring-recognition.md).
 
 ## Doxygen-facing representation
 
@@ -78,3 +82,13 @@ parser-state transitions and recovery while the small ADR-005 fixtures remain th
 primary executable specification for individual syntax claims.  The same harness
 runs both layers against maintained source and generated consumer bytes.  See
 [ADR-008](adr/ADR-008-add-scenario-level-program-regressions.md).
+
+## Standards-conforming docstring recognition
+
+ADR-009 expands the recognition boundary to support ordinary and raw
+triple-double-quoted docstrings, makes one-line prose recognition deterministic,
+and allows conventional multi-line `def`, `async def`, and `class` headers to
+retain pending suite state through a physical line ending in the suite-opening
+colon.  Other prefixes and lexically ambiguous cases remain unsupported unless
+separately governed, preserving the portable-AWK and false-negative bias.  See
+[ADR-009](adr/ADR-009-expand-standards-conforming-docstring-recognition.md).
