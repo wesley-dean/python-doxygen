@@ -1,9 +1,8 @@
 # python-doxygen
 
 `python-doxygen` is a documentation-led Doxygen input filter for Python.  It
-translates Python-native PEP 257/Sphinx docstrings into a candidate
-Doxygen-friendly representation while preserving Python as the maintained source
-language.
+translates Python-native PEP 257/Sphinx docstrings into a Doxygen-friendly
+representation while preserving Python as the maintained source language.
 
 The filter does not require Doxygen-specific Python docstrings, does not replace
 Python's parser or linters, and does not infer undocumented API contracts.
@@ -22,12 +21,11 @@ The current implementation deliberately supports a small subset:
 - pass-through of Python outside translated docstrings;
 - line-count preservation for supported translations;
 - warning diagnostics and `--strict`; and
-- a portable-AWK implementation intended for `mawk` and GNU awk.
+- portable operation tested with `mawk` and GNU awk.
 
-The source-preserving Doxygen representation is still governed by Proposed
-ADR-002 until the repository's Doxygen integration experiment passes.  Field
-translation is implemented and covered by golden fixtures; successful Doxygen
-association and rendering must not be claimed until that experiment is green.
+ADR-002 records the successful Doxygen experiment: Doxygen parses the
+source-preserving Python representation and generated XML contains the translated
+function prose, parameter, return, and exception documentation.
 
 The filter is not a complete Python parser.  Raw or otherwise prefixed docstrings,
 arbitrary quote forms, complete reStructuredText parsing, signature validation,
@@ -68,9 +66,8 @@ def load(path: str) -> str:
     """
 ```
 
-The candidate filtered stream changes those supported field lines to Doxygen
-parameter, return, and exception commands while preserving ordinary prose and
-Python source.
+The filtered stream changes those supported field lines to Doxygen parameter,
+return, and exception commands while preserving ordinary prose and Python source.
 
 ## Tests and build artifacts
 
@@ -81,7 +78,8 @@ make test AWK_BIN=mawk
 make test AWK_BIN=gawk
 ```
 
-Build the consumer artifact and checksum with:
+CI runs both implementations and a Doxygen integration job.  Build the consumer
+artifact and checksum with:
 
 ```sh
 make build
