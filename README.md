@@ -7,32 +7,48 @@ representation while preserving Python as the maintained source language.
 The filter does not require Doxygen-specific Python docstrings, does not replace
 Python's parser or linters, and does not infer undocumented API contracts.
 
-## Milestone 1
+## Supported documentation surface
 
-The current implementation deliberately supports a small subset:
+The current implementation supports the Python documentation forms governed by
+the repository's adopted documentation standard, including:
 
-- triple-double-quoted module docstrings;
-- triple-double-quoted class docstrings;
-- triple-double-quoted function and method docstrings;
+- ordinary triple-double-quoted module, class, function, and method docstrings;
+- raw `r"""..."""` and `R"""..."""` docstrings when literal backslashes are
+  required;
+- deterministic one-line prose docstrings in governed documentation positions;
+- conventional multi-line `def`, `async def`, and `class` declaration headers;
 - descriptive prose inside recognized docstrings;
 - `:param name:` field translation;
 - `:returns:` field translation;
 - `:raises ExceptionType:` field translation;
+- `:yields:` translation to a dedicated Doxygen `Yields` paragraph;
+- `:type name:` translation to a dedicated `Type of name` paragraph;
+- `:rtype:` translation to a dedicated `Return type` paragraph;
+- continuation prose for governed structured fields;
+- representative property, async-function, generator, context-manager, and
+  decorated-function forms without special decorator inference;
 - pass-through of Python outside translated docstrings;
-- line-count preservation for supported translations;
 - warning diagnostics and `--strict`; and
 - portable operation tested with `mawk` and GNU awk.
 
-ADR-002 records the successful Doxygen experiment: Doxygen parses the
-source-preserving Python representation and generated XML contains the translated
-function prose, parameter, return, and exception documentation.
+Most translations preserve physical line count.  The titled-paragraph
+representations for `:yields:`, `:type name:`, and `:rtype:` add one output line
+per translated field so Doxygen receives separate paragraph titles and bodies.
+ADRs 003 and 010 govern those bounded exceptions.
 
-The filter is not a complete Python parser.  Raw or otherwise prefixed docstrings,
-arbitrary quote forms, complete reStructuredText parsing, signature validation,
-type inference, inferred returns or exceptions, broad decorator semantics, and
-complex implicit string concatenation are outside milestone 1.
+Doxygen-facing integrations that expect translated commands inside Python
+docstrings to be interpreted structurally must set `PYTHON_DOCSTRING = NO`.
+The maintained integration configuration and CI suite exercise that contract.
 
-`:yields:` is deliberately not translated in milestone 1 under ADR-003.
+The filter remains intentionally narrower than a Python parser or linter.  It
+does not infer types, returns, exceptions, or decorator semantics; validate
+signature/documentation agreement; decide whether `:type:` or `:rtype:` is
+redundant with annotations; or reinterpret unsupported or lexically ambiguous
+source.  Unsupported forms remain visible rather than being assigned speculative
+semantics.
+
+See `doc/python-documentation-coverage.md` for the complete supported,
+pass-through, and delegated boundary.
 
 ## Usage
 
@@ -66,8 +82,25 @@ def load(path: str) -> str:
     """
 ```
 
-The filtered stream changes those supported field lines to Doxygen parameter,
-return, and exception commands while preserving ordinary prose and Python source.
+The filtered stream changes governed field lines to Doxygen commands or titled
+paragraphs while preserving ordinary prose and surrounding Python source.
+
+Intentionally unannotated interfaces may also carry maintained type fields when
+the adopted Python documentation standard permits them:
+
+```python
+def load_unannotated(path):
+    """Load a configuration value.
+
+    :param path: Path to read.
+    :type path: pathlib.Path
+    :returns: Loaded configuration.
+    :rtype: Configuration
+    """
+```
+
+The filter translates those maintained type assertions for Doxygen; it does not
+validate whether annotations should have been used instead.
 
 ## Tests and build artifacts
 
