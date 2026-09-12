@@ -4,7 +4,7 @@ Date: 2026-09-11
 
 ## Status
 
-Accepted
+Accepted; partially superseded by ADR-008.
 
 ## Context
 
@@ -39,6 +39,10 @@ localized and parser-boundary changes harder to review.  Tests tied to internal
 helpers were rejected because implementation refactoring should not change the
 public contract.
 
+ADR-008 supersedes only the rejection of supplementary larger representative
+programs.  The requirement to retain small, behavior-focused fixtures remains in
+force.
+
 ## Consequences
 
 The fixture count may grow as support expands, but each new syntax claim should
@@ -50,3 +54,5 @@ test failure rather than a documentation-only discrepancy.
 - ADR-001 defines the parser boundary the fixtures protect.
 - ADR-002 governs the Doxygen integration representation.
 - ADR-004 defines the source/dist artifact boundary.
+- ADR-008 adds supplementary larger program fixtures without replacing these
+  focused regressions.

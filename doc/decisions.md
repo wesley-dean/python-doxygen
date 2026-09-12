@@ -40,10 +40,12 @@ deferral of release publication; the artifact boundary remains unchanged.  See
 
 ## Behavior-focused fixtures
 
-Regression coverage uses small fixtures that each protect a narrow public
+Regression coverage retains small fixtures that each protect a narrow public
 behavior.  Golden output, diagnostics, runtime-string non-recognition, and
 source/dist parity define the supported contract rather than helper structure.
-See [ADR-005](adr/ADR-005-use-small-behavior-focused-fixtures.md).
+ADR-008 supplements these fixtures with larger program-level scenarios without
+replacing their role.  See
+[ADR-005](adr/ADR-005-use-small-behavior-focused-fixtures.md).
 
 ## Shared project infrastructure
 
@@ -67,3 +69,12 @@ without GitHub authentication or version discovery.  Release-artifact canaries
 may independently verify publication packaging, but they are not part of the
 downstream dependency-resolution path.  See
 [ADR-007](adr/ADR-007-publish-and-canary-exact-release-artifacts.md).
+
+## Scenario-level program regressions
+
+The regression suite also includes larger Python programs that combine previously
+governed behaviors in realistic sequences.  These scenarios exercise longer
+parser-state transitions and recovery while the small ADR-005 fixtures remain the
+primary executable specification for individual syntax claims.  The same harness
+runs both layers against maintained source and generated consumer bytes.  See
+[ADR-008](adr/ADR-008-add-scenario-level-program-regressions.md).

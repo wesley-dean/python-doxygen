@@ -44,6 +44,27 @@ for expected in "$ROOT_DIR"/tests/python/expected/*.py; do
     printf 'ok - output: %s\n' "$name"
 done
 
+for expected in "$ROOT_DIR"/tests/python/programs-expected/*.py; do
+    name=${expected##*/}
+    input="$ROOT_DIR/tests/python/programs/$name"
+    actual="$TMP_DIR/program-$name"
+    errors="$TMP_DIR/program-$name.err"
+
+    test -f "$input" || fail "missing program input for $name"
+    if ! "$AWK_BIN" -f "$FILTER" -- "$input" >"$actual" 2>"$errors"; then
+        fail "program case failed to execute: $name"
+    fi
+    test ! -s "$errors" || fail "program case emitted a diagnostic: $name"
+    diff -u "$expected" "$actual" || fail "program output mismatch: $name"
+
+    expected_lines=$(wc -l <"$input" | tr -d ' ')
+    actual_lines=$(wc -l <"$actual" | tr -d ' ')
+    test "$actual_lines" -eq "$expected_lines" || fail "program line count changed: $name"
+
+    CASE_COUNT=$((CASE_COUNT + 1))
+    printf 'ok - program: %s\n' "$name"
+done
+
 for expected in "$ROOT_DIR"/tests/python/diagnostics/*.err; do
     name=${expected##*/}
     name=${name%.err}
