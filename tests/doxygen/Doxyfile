@@ -8,7 +8,8 @@ GENERATE_RTF           = NO
 GENERATE_XML           = YES
 XML_OUTPUT             = xml
 INPUT                  = tests/python/fixtures/00-doxygen-experiment.py \
-                         tests/python/fixtures/20-doxygen-standards-conformance.py
+                         tests/python/fixtures/20-doxygen-standards-conformance.py \
+                         tests/doxygen/representation-candidate.py
 RECURSIVE              = NO
 FILE_PATTERNS          = *.py
 FILTER_PATTERNS        = *.py="$(AWK_BIN) -f $(DOXYGEN_PYTHON_FILTER) --"
