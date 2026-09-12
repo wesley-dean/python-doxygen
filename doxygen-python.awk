@@ -4,8 +4,8 @@
 ## @details
 ## Preserves Python source and rewrites only governed structured fields inside
 ## conservatively recognized docstrings.  This is an intentionally small
-## documentation translator, not a complete Python parser.  See ADR-001 and the
-## Proposed ADR-002 before widening recognition or representation behavior.
+## documentation translator, not a complete Python parser.  See ADR-001 and
+## ADR-002 before widening recognition or representation behavior.
 
 ## @rule initialize_filter
 ## @brief Initializes parser state and consumes the `--strict` option.
