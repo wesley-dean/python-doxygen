@@ -97,3 +97,14 @@ retain pending suite state through a physical line ending in the suite-opening
 colon.  Other prefixes and lexically ambiguous cases remain unsupported unless
 separately governed, preserving the portable-AWK and false-negative bias.  See
 [ADR-009](adr/ADR-009-expand-standards-conforming-docstring-recognition.md).
+
+## Unannotated type fields
+
+ADR-010 translates maintained `:type name:` and `:rtype:` fields into dedicated
+Doxygen paragraphs titled `Type of name` and `Return type`.  The representation
+preserves the source's explicit type assertions without folding them into
+parameter or return prose, and each translated field may add one physical output
+line.  The filter does not determine whether annotations make those fields
+redundant or inconsistent; that semantic validation remains with Python-native
+tooling.  See
+[ADR-010](adr/ADR-010-translate-unannotated-type-fields.md).
