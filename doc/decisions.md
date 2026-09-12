@@ -9,25 +9,34 @@ about uncertainty and must not present itself as a complete Python parser.  See
 
 ## Supported Python documentation scope
 
-Milestone 1 recognizes only conservatively identifiable triple-double-quoted
-module, class, function, and method docstrings and translates three structured
-field forms.  Ambiguous strings remain source rather than being guessed to be
-documentation.  See
-[ADR-001](adr/ADR-001-define-supported-python-documentation-scope.md).
+ADR-001 established the milestone-1 boundary: conservatively identifiable
+triple-double-quoted module, class, function, and method docstrings with three
+structured field translations.  ADR-009 supersedes only the portions of that
+boundary covering raw-prefix recognition, deterministic one-line prose docstrings,
+and single-physical-line declaration headers; ADR-001 remains authoritative for
+its conservative documentation-position, runtime-string, diagnostic, and
+structured-field rules until separately superseded.  See
+[ADR-001](adr/ADR-001-define-supported-python-documentation-scope.md) and
+[ADR-009](adr/ADR-009-expand-standards-conforming-docstring-recognition.md).
 
 ## Doxygen-facing representation
 
-Doxygen successfully parsed the source-preserving experiment and generated XML
-containing translated prose, parameter, return, and exception documentation.  The
-filter therefore preserves Python declarations and docstrings while translating
-only supported field lines.  See
+The filter preserves Python declarations and docstrings while translating only
+governed field syntax.  Early integration proved that the translated text
+survived the Doxygen pipeline; follow-on issue-5 testing established the stronger
+configuration contract that Doxygen integrations expecting translated commands to
+be interpreted structurally must set `PYTHON_DOCSTRING = NO`.  The maintained
+integration suite now exercises that configuration directly.  See
 [ADR-002](adr/ADR-002-preserve-python-and-translate-docstrings.md).
 
 ## Yields translation
 
-Milestone 1 leaves `:yields:` unchanged rather than equating generator yields with
-ordinary return semantics.  A later structured representation requires evidence
-and an updated or superseding decision.  See
+ADR-003 now governs `:yields:` as a dedicated Doxygen `Yields` paragraph rather
+than return documentation.  The representation may add one physical output line
+per translated yields field because Doxygen requires the paragraph title and body
+to be separate for the intended structure; other supported structured fields
+continue to preserve line count.  Continuation prose remains byte-preserved when
+Doxygen can retain its association without extra translator state.  See
 [ADR-003](adr/ADR-003-define-yields-translation.md).
 
 ## Versioned consumer artifact
@@ -78,3 +87,24 @@ parser-state transitions and recovery while the small ADR-005 fixtures remain th
 primary executable specification for individual syntax claims.  The same harness
 runs both layers against maintained source and generated consumer bytes.  See
 [ADR-008](adr/ADR-008-add-scenario-level-program-regressions.md).
+
+## Standards-conforming docstring recognition
+
+ADR-009 expands the recognition boundary to support ordinary and raw
+triple-double-quoted docstrings, makes one-line prose recognition deterministic,
+and allows conventional multi-line `def`, `async def`, and `class` headers to
+retain pending suite state through a physical line ending in the suite-opening
+colon.  Other prefixes and lexically ambiguous cases remain unsupported unless
+separately governed, preserving the portable-AWK and false-negative bias.  See
+[ADR-009](adr/ADR-009-expand-standards-conforming-docstring-recognition.md).
+
+## Unannotated type fields
+
+ADR-010 translates maintained `:type name:` and `:rtype:` fields into dedicated
+Doxygen paragraphs titled `Type of name` and `Return type`.  The representation
+preserves the source's explicit type assertions without folding them into
+parameter or return prose, and each translated field may add one physical output
+line.  The filter does not determine whether annotations make those fields
+redundant or inconsistent; that semantic validation remains with Python-native
+tooling.  See
+[ADR-010](adr/ADR-010-translate-unannotated-type-fields.md).

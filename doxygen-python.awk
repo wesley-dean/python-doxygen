@@ -4,8 +4,9 @@
 ## @details
 ## Preserves Python source and rewrites only governed structured fields inside
 ## conservatively recognized docstrings.  This is an intentionally small
-## documentation translator, not a complete Python parser.  See ADR-001 and
-## ADR-002 before widening recognition or representation behavior.
+## documentation translator, not a complete Python parser.  See ADR-001,
+## ADR-002, ADR-003, ADR-009, and ADR-010 before widening recognition or
+## representation behavior.
 
 ## @rule initialize_filter
 ## @brief Initializes parser state and consumes the `--strict` option.
@@ -13,6 +14,7 @@ BEGIN {
     strict = 0
     diagnostics = 0
     in_docstring = 0
+    in_declaration = 0
     module_doc_possible = 1
     pending_suite = 0
     for (i = 1; i < ARGC; i++) {
@@ -95,11 +97,11 @@ function is_blank_or_comment(line,    s) {
     return (s == "" || s ~ /^#/)
 }
 
-## @fn is_declaration(line)
-## @brief Recognizes milestone-1 class and function declaration headers.
+## @fn is_declaration_start(line)
+## @brief Recognizes governed class and function declaration starts.
 ## @details
 ## Removes leading horizontal whitespace from a scratch copy and recognizes only
-## the conservative declaration forms governed by milestone 1.
+## the conservative declaration-start forms governed by ADR-009.
 ##
 ## @param line Source line to inspect.
 ## @local s Scratch copy used while testing the declaration syntax.
@@ -111,18 +113,42 @@ function is_blank_or_comment(line,    s) {
 ## @par STDERR
 ## Nothing is written to STDERR.
 ##
-## @returns One for a supported declaration header; zero otherwise.
-function is_declaration(line,    s) {
+## @returns One for a supported declaration start; zero otherwise.
+function is_declaration_start(line,    s) {
     s = line
     sub(/^[ \t]*/, "", s)
     return (s ~ /^(async[ \t]+)?def[ \t]+[A-Za-z_][A-Za-z0-9_]*[ \t]*\(/ || s ~ /^class[ \t]+[A-Za-z_][A-Za-z0-9_]*/)
 }
 
-## @fn starts_docstring(line)
-## @brief Tests for an unprefixed triple-double-quoted string start.
+## @fn declaration_header_complete(line)
+## @brief Tests whether a declaration header reaches its suite-opening colon.
 ## @details
-## Removes leading horizontal whitespace from a scratch copy and checks only the
-## exact unprefixed delimiter form supported by milestone 1.
+## Removes trailing horizontal whitespace and checks for a final colon.  This is
+## intentionally narrower than Python lexical parsing and does not interpret
+## inline comments, strings, annotations, or balanced delimiters.
+##
+## @param line Physical declaration-header line to inspect.
+## @local s Scratch copy used while testing the line ending.
+##
+## @par STDIN
+## Nothing is read directly from STDIN.
+## @par STDOUT
+## Nothing is written to STDOUT.
+## @par STDERR
+## Nothing is written to STDERR.
+##
+## @returns One when the last non-whitespace byte is a colon; zero otherwise.
+function declaration_header_complete(line,    s) {
+    s = line
+    sub(/[ \t]+$/, "", s)
+    return (s ~ /:$/)
+}
+
+## @fn starts_docstring(line)
+## @brief Tests for a supported triple-double-quoted docstring start.
+## @details
+## Removes leading horizontal whitespace and recognizes the ordinary delimiter
+## plus the `r` and `R` raw prefixes required by ADR-009.
 ##
 ## @param line Source line to inspect.
 ## @local s Scratch copy used while testing the opening delimiter.
@@ -134,21 +160,48 @@ function is_declaration(line,    s) {
 ## @par STDERR
 ## Nothing is written to STDERR.
 ##
-## @returns One when the first non-whitespace bytes open the supported form.
+## @returns One when the first non-whitespace bytes open a supported form.
 function starts_docstring(line,    s) {
     s = line
     sub(/^[ \t]*/, "", s)
-    return (substr(s, 1, 3) == "\"\"\"")
+    if (substr(s, 1, 3) == "\"\"\"") return 1
+    return ((substr(s, 1, 1) == "r" || substr(s, 1, 1) == "R") && substr(s, 2, 3) == "\"\"\"")
+}
+
+## @fn docstring_open_width(line)
+## @brief Returns the byte width of a supported docstring opening form.
+## @details
+## Distinguishes ordinary and raw supported openings after removing leading
+## horizontal whitespace.  Unsupported forms return zero.
+##
+## @param line Source line beginning with a possible docstring opening.
+## @local s Scratch copy used while identifying the opening form.
+##
+## @par STDIN
+## Nothing is read directly from STDIN.
+## @par STDOUT
+## Nothing is written to STDOUT.
+## @par STDERR
+## Nothing is written to STDERR.
+##
+## @returns Three for ordinary, four for raw, or zero for unsupported input.
+function docstring_open_width(line,    s) {
+    s = line
+    sub(/^[ \t]*/, "", s)
+    if (substr(s, 1, 3) == "\"\"\"") return 3
+    if ((substr(s, 1, 1) == "r" || substr(s, 1, 1) == "R") && substr(s, 2, 3) == "\"\"\"") return 4
+    return 0
 }
 
 ## @fn closes_same_line(line)
 ## @brief Tests whether a recognized docstring closes on its opening line.
 ## @details
-## Removes leading horizontal whitespace, verifies the opening delimiter, and
-## searches the remainder of the line for a second supported delimiter.
+## Identifies the governed opening width and searches the remainder of the line
+## for a second triple-double-quote delimiter.
 ##
 ## @param line Recognized docstring start line.
 ## @local s Scratch copy used while validating the opening delimiter.
+## @local width Width of the supported opening form.
 ## @local rest Source text following the opening delimiter.
 ##
 ## @par STDIN
@@ -159,11 +212,12 @@ function starts_docstring(line,    s) {
 ## Nothing is written to STDERR.
 ##
 ## @returns One when a second delimiter occurs on the line; zero otherwise.
-function closes_same_line(line,    s, rest) {
+function closes_same_line(line,    s, width, rest) {
     s = line
     sub(/^[ \t]*/, "", s)
-    if (substr(s, 1, 3) != "\"\"\"") return 0
-    rest = substr(s, 4)
+    width = docstring_open_width(s)
+    if (width == 0) return 0
+    rest = substr(s, width + 1)
     return (index(rest, "\"\"\"") > 0)
 }
 
@@ -172,13 +226,16 @@ function closes_same_line(line,    s, rest) {
 ## @details
 ## Preserves indentation, recognizes only governed Sphinx field forms, and
 ## returns the original line whenever no safe translation exists.  Malformed
-## governed fields are diagnosed and left unchanged.
+## governed fields are diagnosed and left unchanged.  ADR-003 and ADR-010 permit
+## titled-paragraph translations to contain one embedded newline so Doxygen
+## receives a separate paragraph title and body.
 ##
 ## @param line Physical docstring line to inspect.
 ## @local indent Leading horizontal whitespace preserved in translated output.
 ## @local body Docstring content after indentation is removed.
-## @local name Parameter name extracted from a `:param` field.
-## @local desc Description extracted from a supported structured field.
+## @local name Parameter or type-field name extracted from a structured field.
+## @local desc Description or maintained type value extracted from a supported
+## field.
 ## @local exc Exception name extracted from a `:raises` field.
 ##
 ## @par STDIN
@@ -220,6 +277,30 @@ function translate_doc_line(line,    indent, body, name, desc, exc) {
         return indent "@exception " exc (desc == "" ? "" : " " desc)
     }
     if (body ~ /^:raises([ \t]|:|$)/) { warn("malformed :raises field"); return line }
+    if (body ~ /^:yields:[ \t]*/) {
+        desc = body
+        sub(/^:yields:[ \t]*/, "", desc)
+        if (desc == "") { warn("malformed :yields field"); return line }
+        return indent "@par Yields\n" indent desc
+    }
+    if (body ~ /^:yields([ \t]|$)/) { warn("malformed :yields field"); return line }
+    if (body ~ /^:type[ \t]+[^:]+:/) {
+        name = body
+        sub(/^:type[ \t]+/, "", name)
+        desc = name
+        sub(/:.*/, "", name)
+        sub(/^[^:]*:[ \t]*/, "", desc)
+        if (name == "" || name ~ /[ \t]/ || desc == "") { warn("malformed :type field"); return line }
+        return indent "@par Type of " name "\n" indent desc
+    }
+    if (body ~ /^:type([ \t]|:|$)/) { warn("malformed :type field"); return line }
+    if (body ~ /^:rtype:[ \t]*/) {
+        desc = body
+        sub(/^:rtype:[ \t]*/, "", desc)
+        if (desc == "") { warn("malformed :rtype field"); return line }
+        return indent "@par Return type\n" indent desc
+    }
+    if (body ~ /^:rtype([ \t]|$)/) { warn("malformed :rtype field"); return line }
     return line
 }
 
@@ -230,6 +311,15 @@ function translate_doc_line(line,    indent, body, name, desc, exc) {
     if (in_docstring) {
         if (index(line, "\"\"\"") > 0) { in_docstring = 0; print line; next }
         print translate_doc_line(line)
+        next
+    }
+    if (in_declaration) {
+        if (declaration_header_complete(line)) {
+            in_declaration = 0
+            pending_suite = 1
+            pending_indent = declaration_indent
+        }
+        print line
         next
     }
     if (pending_suite) {
@@ -252,9 +342,14 @@ function translate_doc_line(line,    indent, body, name, desc, exc) {
         }
         if (leading_width(line) == 0) module_doc_possible = 0
     }
-    if (is_declaration(line)) {
-        pending_suite = 1
-        pending_indent = leading_width(line)
+    if (is_declaration_start(line)) {
+        declaration_indent = leading_width(line)
+        if (declaration_header_complete(line)) {
+            pending_suite = 1
+            pending_indent = declaration_indent
+        } else {
+            in_declaration = 1
+        }
     }
     print line
 }

@@ -23,6 +23,10 @@ normalize_warnings() {
     sed 's/^.*: warning: //' "$1"
 }
 
+expected_line_expansion() {
+    grep -Ec '^[[:space:]]*:(yields|rtype):[[:space:]]*[^[:space:]].*$|^[[:space:]]*:type[[:space:]]+[^:[:space:]]+:[[:space:]]*[^[:space:]].*$' "$1" || true
+}
+
 for expected in "$ROOT_DIR"/tests/python/expected/*.py; do
     name=${expected##*/}
     input="$ROOT_DIR/tests/python/fixtures/$name"
@@ -37,8 +41,9 @@ for expected in "$ROOT_DIR"/tests/python/expected/*.py; do
     diff -u "$expected" "$actual" || fail "output mismatch: $name"
 
     expected_lines=$(wc -l <"$input" | tr -d ' ')
+    expected_lines=$((expected_lines + $(expected_line_expansion "$input")))
     actual_lines=$(wc -l <"$actual" | tr -d ' ')
-    test "$actual_lines" -eq "$expected_lines" || fail "line count changed: $name"
+    test "$actual_lines" -eq "$expected_lines" || fail "unexpected line-count change: $name"
 
     CASE_COUNT=$((CASE_COUNT + 1))
     printf 'ok - output: %s\n' "$name"
@@ -58,8 +63,9 @@ for expected in "$ROOT_DIR"/tests/python/programs-expected/*.py; do
     diff -u "$expected" "$actual" || fail "program output mismatch: $name"
 
     expected_lines=$(wc -l <"$input" | tr -d ' ')
+    expected_lines=$((expected_lines + $(expected_line_expansion "$input")))
     actual_lines=$(wc -l <"$actual" | tr -d ' ')
-    test "$actual_lines" -eq "$expected_lines" || fail "program line count changed: $name"
+    test "$actual_lines" -eq "$expected_lines" || fail "unexpected program line-count change: $name"
 
     CASE_COUNT=$((CASE_COUNT + 1))
     printf 'ok - program: %s\n' "$name"
@@ -89,6 +95,74 @@ for expected in "$ROOT_DIR"/tests/python/diagnostics/*.err; do
     CASE_COUNT=$((CASE_COUNT + 1))
     printf 'ok - diagnostic: %s\n' "$name"
 done
+
+malformed_yields="$TMP_DIR/malformed-yields.py"
+{
+    printf '%s\n' 'def values():'
+    printf '%s\n' '    """Document values.'
+    printf '%s\n' ''
+    printf '%s%s\n' '    :yi' 'elds:'
+    printf '%s\n' '    """'
+    printf '%s\n' '    return None'
+} >"$malformed_yields"
+warning_err="$TMP_DIR/malformed-yields.warning.err"
+strict_err="$TMP_DIR/malformed-yields.strict.err"
+normalized="$TMP_DIR/malformed-yields.normalized.err"
+if ! "$AWK_BIN" -f "$FILTER" -- "$malformed_yields" >"$TMP_DIR/malformed-yields.warning.py" 2>"$warning_err"; then
+    fail 'non-strict malformed yields case exited non-zero'
+fi
+normalize_warnings "$warning_err" >"$normalized"
+printf '%s\n' 'malformed :yields field' | diff -u - "$normalized" || fail 'malformed yields warning mismatch'
+if "$AWK_BIN" -f "$FILTER" -- --strict "$malformed_yields" >"$TMP_DIR/malformed-yields.strict.py" 2>"$strict_err"; then
+    fail 'strict malformed yields case exited zero'
+fi
+normalize_warnings "$strict_err" >"$normalized"
+printf '%s\n' 'malformed :yields field' | diff -u - "$normalized" || fail 'strict malformed yields warning mismatch'
+CASE_COUNT=$((CASE_COUNT + 1))
+printf '%s\n' 'ok - diagnostic: malformed yields field'
+
+check_malformed_type_field() {
+    field=$1
+    input="$TMP_DIR/malformed-$field.py"
+    warning_out="$TMP_DIR/malformed-$field.warning.py"
+    warning_err="$TMP_DIR/malformed-$field.warning.err"
+    strict_err="$TMP_DIR/malformed-$field.strict.err"
+    normalized="$TMP_DIR/malformed-$field.normalized.err"
+    expected_err="$TMP_DIR/malformed-$field.expected.err"
+
+    {
+        printf '%s\n' 'def load(path):'
+        printf '%s\n' '    """Document a deliberately unannotated value.'
+        printf '%s\n' ''
+        if [ "$field" = type ]; then
+            printf '%s%s%s\n' '    :' "$field" ' path:'
+        else
+            printf '%s%s%s\n' '    :' "$field" ':'
+        fi
+        printf '%s\n' '    """'
+        printf '%s\n' '    return path'
+    } >"$input"
+
+    if ! "$AWK_BIN" -f "$FILTER" -- "$input" >"$warning_out" 2>"$warning_err"; then
+        fail "non-strict malformed $field case exited non-zero"
+    fi
+    cmp "$input" "$warning_out" >/dev/null || fail "malformed $field source was rewritten"
+    normalize_warnings "$warning_err" >"$normalized"
+    printf '%s%s%s\n' 'malformed :' "$field" ' field' >"$expected_err"
+    diff -u "$expected_err" "$normalized" || fail "malformed $field warning mismatch"
+
+    if "$AWK_BIN" -f "$FILTER" -- --strict "$input" >"$TMP_DIR/malformed-$field.strict.py" 2>"$strict_err"; then
+        fail "strict malformed $field case exited zero"
+    fi
+    normalize_warnings "$strict_err" >"$normalized"
+    diff -u "$expected_err" "$normalized" || fail "strict malformed $field warning mismatch"
+
+    CASE_COUNT=$((CASE_COUNT + 1))
+    printf 'ok - diagnostic: malformed %s field\n' "$field"
+}
+
+check_malformed_type_field type
+check_malformed_type_field rtype
 
 runtime="$TMP_DIR/08-runtime-triple-string.py"
 grep -Fq ':param fake: This is data, not documentation.' "$runtime" || \

@@ -12,10 +12,10 @@ def undocumented(value):
 
 def raw_documented(value):
     r"""
-    Raw docstrings are valid Python but outside milestone-1 support.
+    Raw docstrings are supported when they occupy a governed docstring position.
 
-    :param value: This field must remain unchanged.
-    :returns: This field must also remain unchanged.
+    :param value: This field should translate as documentation.
+    :returns: This field should also translate as documentation.
     """
     return value
 
@@ -51,7 +51,7 @@ class Processor:
 
 def final_function(value):
     """
-    Confirm parser state recovers after unsupported and runtime strings.
+    Confirm parser state recovers after supported raw and runtime strings.
 
     :param value: Final value in the file.
     :returns: The unchanged final value.

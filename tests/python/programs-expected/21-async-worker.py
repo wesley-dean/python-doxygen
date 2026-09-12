@@ -7,11 +7,9 @@ async def fetch_record(identifier, retries=3):
     """
     Fetch one record after an asynchronous scheduling point.
 
-    :type identifier: str
     @param identifier Stable record identifier.
     @param retries Maximum number of attempts.
     @return A dictionary containing the record identifier.
-    :rtype: dict
     @exception LookupError The identifier is empty.
     """
     if not identifier:
@@ -25,7 +23,8 @@ async def stream_records(records):
     Yield records without assigning return semantics to generator output.
 
     @param records Iterable of records to emit.
-    :yields: One record at a time.
+    @par Yields
+    One record at a time.
     """
     for record in records:
         await asyncio.sleep(0)

@@ -72,7 +72,7 @@ test-dist: build
 	grep -Fxq '# DOXYGEN_PYTHON_BUILD_COMMIT=$(BUILD_COMMIT)' "$(DIST_FILTER)"
 	DOXYGEN_PYTHON_FILTER="$(DIST_FILTER)" AWK_BIN="$(AWK_BIN)" sh ./tests/run-tests.sh
 
-## Exercise one focused Python fixture through Doxygen with the selected filter.
+## Exercise governed Python fixtures through Doxygen with the selected filter.
 test-doxygen:
 	@test -f "$(DOXYGEN_PYTHON_FILTER)" || { printf '%s\n' 'Missing Python Doxygen filter' >&2; exit 1; }
 	@command -v doxygen >/dev/null 2>&1 || { printf '%s\n' 'doxygen is required for make test-doxygen' >&2; exit 1; }
@@ -82,6 +82,18 @@ test-doxygen:
 	grep -R -q 'Value to normalize' "$(INTEGRATION_OUT)/xml"
 	grep -R -q 'The canonical normalized value' "$(INTEGRATION_OUT)/xml"
 	grep -R -q 'ValueError' "$(INTEGRATION_OUT)/xml"
+	grep -R -q 'Track lifecycle status for one operation' "$(INTEGRATION_OUT)/xml"
+	grep -R -q 'Return the current lifecycle status' "$(INTEGRATION_OUT)/xml"
+	grep -R -q 'Windows path to normalize' "$(INTEGRATION_OUT)/xml"
+	grep -R -q 'The normalized Windows path' "$(INTEGRATION_OUT)/xml"
+	grep -R -q '<title>Yields</title>' "$(INTEGRATION_OUT)/xml"
+	grep -R -q 'description continues' "$(INTEGRATION_OUT)/xml"
+	grep -R -q 'before the source is exhausted' "$(INTEGRATION_OUT)/xml"
+	grep -R -q 'description also continues' "$(INTEGRATION_OUT)/xml"
+	grep -R -q '<title>Type of path</title>' "$(INTEGRATION_OUT)/xml"
+	grep -R -q 'pathlib.Path' "$(INTEGRATION_OUT)/xml"
+	grep -R -q '<title>Return type</title>' "$(INTEGRATION_OUT)/xml"
+	grep -R -q 'Configuration' "$(INTEGRATION_OUT)/xml"
 
 ## Generate the SHA-256 checksum for the exact consumer artifact.
 checksums: build

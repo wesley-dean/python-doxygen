@@ -7,11 +7,18 @@ GENERATE_MAN           = NO
 GENERATE_RTF           = NO
 GENERATE_XML           = YES
 XML_OUTPUT             = xml
-INPUT                  = tests/python/fixtures/00-doxygen-experiment.py
+INPUT                  = tests/python/fixtures/00-doxygen-experiment.py \
+                         tests/python/fixtures/20-doxygen-standards-conformance.py \
+                         tests/python/fixtures/21-structured-field-continuations.py \
+                         tests/python/fixtures/22-doxygen-yields.py \
+                         tests/python/fixtures/22-type-fields.py \
+                         tests/python/fixtures/23-standard-forms.py \
+                         tests/doxygen/representation-candidate.py
 RECURSIVE              = NO
 FILE_PATTERNS          = *.py
 FILTER_PATTERNS        = *.py="$(AWK_BIN) -f $(DOXYGEN_PYTHON_FILTER) --"
 FILTER_SOURCE_FILES    = YES
+PYTHON_DOCSTRING       = NO
 EXTRACT_ALL            = NO
 SOURCE_BROWSER         = YES
 STRIP_CODE_COMMENTS    = NO
