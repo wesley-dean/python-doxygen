@@ -1,8 +1,9 @@
 # python-doxygen
 
 `python-doxygen` is a documentation-led Doxygen input filter for Python.  It
-translates Python-native PEP 257/Sphinx docstrings into a Doxygen-friendly
-representation while preserving Python as the maintained source language.
+translates Python-native PEP 257/Sphinx docstrings into a candidate
+Doxygen-friendly representation while preserving Python as the maintained source
+language.
 
 The filter does not require Doxygen-specific Python docstrings, does not replace
 Python's parser or linters, and does not infer undocumented API contracts.
@@ -15,14 +16,18 @@ The current implementation deliberately supports a small subset:
 - triple-double-quoted class docstrings;
 - triple-double-quoted function and method docstrings;
 - descriptive prose inside recognized docstrings;
-- `:param name:` translated to the corresponding Doxygen parameter command;
-- `:returns:` translated to the corresponding Doxygen return command;
-- `:raises ExceptionType:` translated to the corresponding Doxygen exception
-  command;
+- `:param name:` field translation;
+- `:returns:` field translation;
+- `:raises ExceptionType:` field translation;
 - pass-through of Python outside translated docstrings;
 - line-count preservation for supported translations;
 - warning diagnostics and `--strict`; and
 - a portable-AWK implementation intended for `mawk` and GNU awk.
+
+The source-preserving Doxygen representation is still governed by Proposed
+ADR-002 until the repository's Doxygen integration experiment passes.  Field
+translation is implemented and covered by golden fixtures; successful Doxygen
+association and rendering must not be claimed until that experiment is green.
 
 The filter is not a complete Python parser.  Raw or otherwise prefixed docstrings,
 arbitrary quote forms, complete reStructuredText parsing, signature validation,
@@ -63,9 +68,9 @@ def load(path: str) -> str:
     """
 ```
 
-At the Doxygen boundary, supported field lines are translated to equivalent
-parameter, return, and exception commands.  Ordinary prose and Python source are
-otherwise preserved.
+The candidate filtered stream changes those supported field lines to Doxygen
+parameter, return, and exception commands while preserving ordinary prose and
+Python source.
 
 ## Tests and build artifacts
 
@@ -96,8 +101,9 @@ AWK execution semantics.
 ## Documentation and governance
 
 The canonical Python documentation contract is maintained in
-`wesley-dean/coding_standards/standards/python/documentation-standard.md` and is
-represented in this repository by `doc/documentation-standard.md`.
+`wesley-dean/coding_standards/standards/python/documentation-standard.md`.
+`doc/documentation-standard.md` records the repository's adoption point; the
+canonical file remains authoritative until dependency synchronization is added.
 
 Before changing parser boundaries, generated representation, portability, or the
 artifact contract, review `AGENTS.md`, the documentation standards, all ADRs in
