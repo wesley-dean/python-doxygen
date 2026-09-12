@@ -10,23 +10,32 @@ Accepted
 
 ADR-004 established `dist/doxygen-python.awk` and its SHA-256 checksum as the
 consumer-artifact boundary while deliberately deferring release publication from
-milestone 1.  The sibling `awk-doxygen` and `bash-doxygen` projects now validate
+milestone 1.  The sibling `awk-doxygen` and `bash-doxygen` projects validate
 maintained source, build the exact distribution artifact, verify its checksum,
-and attach both files to GitHub releases created by their versioning workflow.
-They also validate the exact published bytes after release rather than assuming a
-tag checkout is equivalent to the downloadable consumer artifact.
+and attach both files to semantic-versioned GitHub releases.
+
+Those published release assets are consumed by other repositories through
+`bashdeps`.  A consuming repository pins a specific dependency version in its
+manifest, together with the public release-asset URL and expected SHA-256 digest.
+During that repository's build, `bashdeps` downloads those exact released bytes
+and verifies the digest before use.  The consumer does not discover a moving
+version and does not require GitHub authentication to retrieve public release
+assets.
 
 The user has directed `python-doxygen` to retain as much applicable project
 structure as practical from those sibling repositories.  Release publication is
-therefore no longer merely a future possibility; it is part of the chosen
-repository contract and must be governed explicitly.
+therefore part of the repository's downstream dependency contract and must be
+governed explicitly.
 
 ## Decision Drivers
 
 - Make the downloadable consumer bytes identical to bytes produced by the tested
   Make build path.
 - Preserve the source/dist parity requirement from ADR-004 and ADR-005.
-- Give consumers a checksum that verifies the downloaded filter independently.
+- Give downstream repositories a stable semantic version they can pin.
+- Give consumers a checksum that verifies downloaded bytes independently.
+- Support public, unauthenticated retrieval by `bashdeps` during downstream
+  builds.
 - Detect packaging or release-asset failures that a source-tree test cannot see.
 - Keep release validation aligned with the same Doxygen integration fixture used
   during development.
@@ -44,9 +53,11 @@ For each release, the workflow SHALL:
 2. run the maintained-source semantic suite;
 3. build and run the semantic suite against `dist/doxygen-python.awk` with the
    calculated version supplied as build provenance;
-4. generate `dist/doxygen-python.awk.sha256` from that exact artifact;
-5. verify the checksum before publication; and
-6. attach both `dist/doxygen-python.awk` and
+4. exercise that generated release candidate through the Python/Doxygen
+   integration fixture;
+5. generate `dist/doxygen-python.awk.sha256` from that exact artifact;
+6. verify the checksum before publication; and
+7. attach both `dist/doxygen-python.awk` and
    `dist/doxygen-python.awk.sha256` to the GitHub release.
 
 The published asset names SHALL remain:
@@ -56,10 +67,16 @@ doxygen-python.awk
 doxygen-python.awk.sha256
 ```
 
-A release-triggered canary SHALL download those exact published assets, verify
-the checksum, and run the Doxygen integration fixture with the downloaded filter.
-A tag checkout alone is insufficient evidence because the consumer contract
-includes packaging and asset publication, not only repository source at a tag.
+A downstream `bashdeps` manifest SHALL pin a specific released version rather
+than a branch, moving alias, or dynamically discovered latest version.  The
+manifest entry SHALL identify the public release-asset URL and the expected
+SHA-256 digest.  Retrieval of those public assets is intentionally independent
+of GitHub credentials.
+
+A release-artifact canary MAY independently download those exact public assets,
+verify the checksum, and run the Doxygen integration fixture with the downloaded
+filter.  Such a canary validates publication packaging; it is not part of the
+downstream dependency-resolution mechanism.
 
 The released filter SHALL be staged in disposable generated state and SHALL NOT
 replace any stable documentation dependency declared in `dependencies-docs.txt`.
@@ -75,14 +92,19 @@ source/dist parity requirements remain governing.
 
 Continuing to create releases without attaching the generated filter was rejected
 because the repository already defines a distinct consumer artifact and checksum.
-A release that omits those files would preserve version tags while failing to
-publish the contract consumers are expected to use.
+A release that omits those files would create a version tag without publishing
+the dependency bytes downstream repositories are expected to pin.
 
 Publishing maintained `doxygen-python.awk` directly was rejected because it would
 bypass the generated provenance boundary established by ADR-004.
 
-Testing only the release tag was rejected because it cannot detect missing,
-incorrectly named, corrupted, or otherwise mispackaged release assets.
+Having downstream repositories fetch `main`, another moving ref, or an
+unversioned URL was rejected because it would make builds non-reproducible and
+would defeat the manifest pinning model used by `bashdeps`.
+
+Requiring GitHub authentication for downstream retrieval was rejected because the
+release assets are public and the sibling dependency model intentionally uses
+ordinary public release URLs plus digest verification.
 
 Automatically updating stable dependency pins after each release was rejected
 because dependency advancement is a separate reviewed repository decision.
@@ -93,12 +115,16 @@ Release creation now depends on the same Make build and semantic test path used
 locally and in pull-request CI.  Consumers receive one executable AWK artifact and
 one checksum file whose bytes have been tested together.
 
+Downstream repositories can pin an exact semantic version in their `bashdeps`
+manifest and reproduce the same dependency bytes later using only the public
+release URL and committed digest.
+
 The release workflow has a stronger failure boundary: a semantic failure, build
 failure, checksum failure, or asset-publication problem prevents or exposes an
 invalid release rather than leaving the discrepancy for consumers to discover.
 
 Future changes to asset names, provenance fields, checksum format, or the
-release-validation path are compatibility decisions and require corresponding
+release-publication path are compatibility decisions and require corresponding
 ADR review.
 
 ## Related Decisions
