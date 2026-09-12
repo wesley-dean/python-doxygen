@@ -21,10 +21,12 @@ structured-field rules until separately superseded.  See
 
 ## Doxygen-facing representation
 
-Doxygen successfully parsed the source-preserving experiment and generated XML
-containing translated prose, parameter, return, and exception documentation.  The
-filter therefore preserves Python declarations and docstrings while translating
-only supported field lines.  See
+The filter preserves Python declarations and docstrings while translating only
+governed field syntax.  Early integration proved that the translated text
+survived the Doxygen pipeline; follow-on issue-5 testing established the stronger
+configuration contract that Doxygen integrations expecting translated commands to
+be interpreted structurally must set `PYTHON_DOCSTRING = NO`.  The maintained
+integration suite now exercises that configuration directly.  See
 [ADR-002](adr/ADR-002-preserve-python-and-translate-docstrings.md).
 
 ## Yields translation
