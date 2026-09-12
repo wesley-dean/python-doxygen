@@ -1,15 +1,16 @@
 # Python Documentation Standard
 
-This file is synchronized from:
+The normative Python documentation standard for this repository is maintained at:
 
 `wesley-dean/coding_standards/standards/python/documentation-standard.md`
 
-The canonical standard is authoritative.  Do not edit this synchronized copy
-locally.  Synchronize changes from `coding_standards` instead.
+The canonical file is authoritative.  This repository must not independently
+rewrite or weaken that contract.  A later documentation-dependency milestone may
+materialize the canonical bytes here through `bashdeps`; until then, contributors
+and agents must review the canonical source directly.
 
-Python docstrings are the maintained source of truth for generated API reference
-documentation.  Maintained source uses triple-double-quoted Python docstrings and
-Sphinx/reStructuredText structured fields such as:
+The adopted standard establishes Python docstrings as the maintained source of
+truth and uses triple-double-quoted docstrings with structured fields including:
 
 ```text
 :param name: description
@@ -19,9 +20,8 @@ Sphinx/reStructuredText structured fields such as:
 ```
 
 `python-doxygen` operates only at the documentation-generation boundary.  It
-translates supported structured fields into a Doxygen-friendly representation
-without requiring a second Doxygen-specific source dialect.
+translates the explicitly supported subset into a Doxygen-facing representation
+without requiring maintainers to keep a second Doxygen-specific documentation
+dialect.
 
-For the complete normative requirements, including module, class, function,
-method, generator, exception, side-effect, property, asynchronous, and context
-manager documentation, consult the canonical file above.
+This adoption file is not a substitute for the complete canonical standard.
