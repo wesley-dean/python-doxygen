@@ -1,3 +1,5 @@
+# Canonical build and test entry points.
+
 SHELL := /bin/sh
 .SHELLFLAGS := -eu -c
 
