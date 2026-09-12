@@ -1,0 +1,42 @@
+name: Test python-doxygen
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  semantic:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        awk: [mawk, gawk]
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install AWK implementation
+        run: sudo apt-get update && sudo apt-get install -y ${{ matrix.awk }}
+      - name: Run source and dist semantic suite
+        run: make test AWK_BIN=${{ matrix.awk }}
+      - name: Verify checksum generation
+        run: make checksums AWK_BIN=${{ matrix.awk }}
+
+  doxygen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install integration dependencies
+        run: sudo apt-get update && sudo apt-get install -y doxygen mawk
+      - name: Generate Doxygen XML through maintained filter
+        env:
+          AWK_BIN: mawk
+          DOXYGEN_PYTHON_FILTER: ${{ github.workspace }}/doxygen-python.awk
+        run: |
+          doxygen Doxyfile
+          grep -R -q 'Normalize a supplied value' doc/reference/xml
+          grep -R -q 'Value to normalize' doc/reference/xml
+          grep -R -q 'The canonical normalized value' doc/reference/xml
+          grep -R -q 'ValueError' doc/reference/xml
