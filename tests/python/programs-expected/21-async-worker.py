@@ -7,11 +7,9 @@ async def fetch_record(identifier, retries=3):
     """
     Fetch one record after an asynchronous scheduling point.
 
-    :type identifier: str
     @param identifier Stable record identifier.
     @param retries Maximum number of attempts.
     @return A dictionary containing the record identifier.
-    :rtype: dict
     @exception LookupError The identifier is empty.
     """
     if not identifier:
