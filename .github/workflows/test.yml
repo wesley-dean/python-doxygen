@@ -1,0 +1,34 @@
+name: Test python-doxygen
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  semantic:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        awk: [mawk, gawk]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install AWK implementation
+        run: sudo apt-get update && sudo apt-get install -y ${{ matrix.awk }}
+      - name: Run source and dist semantic suite
+        run: make test AWK_BIN=${{ matrix.awk }}
+      - name: Verify checksum generation
+        run: make checksums AWK_BIN=${{ matrix.awk }}
+
+  doxygen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install integration dependencies
+        run: sudo apt-get update && sudo apt-get install -y doxygen mawk
+      - name: Exercise maintained filter through Doxygen
+        run: make test-doxygen AWK_BIN=mawk

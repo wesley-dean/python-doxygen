@@ -26,6 +26,11 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
+      - name: Install release validation tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes doxygen mawk
+
       - name: calculate version
         id: calculate-version
         uses: bitshifted/git-auto-semver@c4e8f005e839f822325356f141939cf6c76b5701 # pin@v1
@@ -33,6 +38,28 @@ jobs:
           create_tag: true
           initial_version: 0.0.1
           tag_prefix: v
+
+      - name: Validate maintained source
+        run: make test-source AWK_BIN=mawk
+
+      - name: Build and validate release artifact
+        run: |
+          make test-dist \
+            AWK_BIN=mawk \
+            VERSION="${{ steps.calculate-version.outputs.version-string }}"
+
+      - name: Exercise release candidate through Doxygen
+        run: |
+          make test-doxygen \
+            AWK_BIN=mawk \
+            DOXYGEN_PYTHON_FILTER=dist/doxygen-python.awk
+
+      - name: Generate and verify release checksum
+        run: |
+          make checksums \
+            VERSION="${{ steps.calculate-version.outputs.version-string }}"
+          cd dist
+          sha256sum -c doxygen-python.awk.sha256
 
       - name: Generate release notes
         id: release-notes
@@ -43,7 +70,7 @@ jobs:
 
       - name: Create release
         id: create-release
-        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # pin@v3.0.2
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # pin@v3.0.3
         with:
           token: "${{ secrets.GITHUB_TOKEN }}"
           name: "v${{ steps.calculate-version.outputs.version-string }}"
@@ -51,3 +78,6 @@ jobs:
           tag_name: "v${{ steps.calculate-version.outputs.version-string }}"
           draft: false
           prerelease: false
+          files: |
+            dist/doxygen-python.awk
+            dist/doxygen-python.awk.sha256
