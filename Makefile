@@ -1,4 +1,4 @@
-# Canonical build, validation, integration-test, and release-artifact entry points.
+# Canonical build, validation, documentation, and release-artifact entry points.
 
 SHELL := /bin/sh
 .SHELLFLAGS := -eu -c
@@ -12,11 +12,28 @@ INTEGRATION_CONFIG := tests/doxygen/Doxyfile
 INTEGRATION_OUT := tests/doxygen/out
 DOXYGEN_PYTHON_FILTER ?= $(SOURCE_FILTER)
 
+VENDOR_DIR := vendor
+DOCS_MANIFEST := dependencies-docs.txt
+BASHDEPS := $(VENDOR_DIR)/bashdeps.bash
+BASHDEPS_VERSION := 0.0.10
+BASHDEPS_URL := https://github.com/wesley-dean/bashdeps/releases/download/v$(BASHDEPS_VERSION)/bashdeps.bash
+BASHDEPS_SHA256 := acbe79d39ab8cbbf906bd864d410ba7a223ba6f09501c02a409b8d3aa8740462
+VENDOR_AWK_FILTER := $(VENDOR_DIR)/doxygen-awk.awk
+VENDOR_BASH_FILTER := $(VENDOR_DIR)/doxygen-bash.awk
+ADRCTL := $(VENDOR_DIR)/adrctl.bash
+ADR_DIR := doc/adr
+ADR_INDEX_FILE := $(ADR_DIR)/README.md
+ADR_INDEX_INTRO := $(ADR_DIR)/README.intro.md
+ADR_INDEX_OUTRO := $(ADR_DIR)/README.outro.md
+REFERENCE_DOC_DIR := doc/reference
+AWK_DOXYGEN_FILTER ?= $(VENDOR_AWK_FILTER)
+BASH_DOXYGEN_FILTER ?= $(VENDOR_BASH_FILTER)
+
 VERSION ?= $(shell git describe --tags --always 2>/dev/null || printf '0.0.0-dev')
 BUILD_COMMIT ?= $(shell git rev-parse --short=12 HEAD 2>/dev/null || printf 'unknown')
 BUILD_DATE ?= $(shell git show -s --format=%cI HEAD 2>/dev/null || printf 'unknown')
 
-.PHONY: all build checksums clean integration-clean test test-source test-dist test-doxygen
+.PHONY: adr-index all build checksums clean deps-docs deps-docs-check distclean docs docs-canary docs-clean integration-clean test test-source test-dist test-doxygen verify-bashdeps FORCE
 
 all: build
 
@@ -70,8 +87,95 @@ test-doxygen:
 checksums: build
 	cd "$(DIST_DIR)" && sha256sum "$(notdir $(DIST_FILTER))" >"$(notdir $(DIST_CHECKSUM))"
 
+FORCE:
+
+## Bootstrap only bashdeps directly, verifying pinned bytes before execution.
+$(BASHDEPS): FORCE
+	@mkdir -p "$(VENDOR_DIR)"
+	@verify_hash() { \
+		path=$$1; \
+		if command -v sha256sum >/dev/null 2>&1; then \
+			printf '%s  %s\n' "$(BASHDEPS_SHA256)" "$$path" | sha256sum -c - >/dev/null 2>&1; \
+		elif command -v shasum >/dev/null 2>&1; then \
+			[ "$$(shasum -a 256 "$$path" | awk '{print $$1}')" = "$(BASHDEPS_SHA256)" ]; \
+		else \
+			return 2; \
+		fi; \
+	}; \
+	if [ -f "$@" ] && verify_hash "$@"; then chmod 0755 "$@"; exit 0; fi; \
+	tmp="$@.tmp"; trap 'rm -f "$$tmp"' EXIT; \
+	if command -v curl >/dev/null 2>&1; then \
+		curl -fsSL "$(BASHDEPS_URL)" -o "$$tmp"; \
+	elif command -v wget >/dev/null 2>&1; then \
+		wget -qO "$$tmp" "$(BASHDEPS_URL)"; \
+	else \
+		printf '%s\n' 'curl or wget is required to bootstrap bashdeps.bash' >&2; exit 1; \
+	fi; \
+	verify_hash "$$tmp" || { printf '%s\n' 'Downloaded bashdeps.bash does not match the committed SHA-256 digest' >&2; exit 1; }; \
+	chmod 0755 "$$tmp"; mv "$$tmp" "$@"; trap - EXIT
+
+## Verify the pinned bashdeps bootstrap without network access or repair.
+verify-bashdeps:
+	@test -x "$(BASHDEPS)" || { printf '%s\n' 'Missing or non-executable vendor/bashdeps.bash; run make deps-docs' >&2; exit 1; }
+	@if command -v sha256sum >/dev/null 2>&1; then \
+		printf '%s  %s\n' "$(BASHDEPS_SHA256)" "$(BASHDEPS)" | sha256sum -c - >/dev/null 2>&1 || { printf '%s\n' 'bashdeps.bash digest mismatch; run make deps-docs' >&2; exit 1; }; \
+	elif command -v shasum >/dev/null 2>&1; then \
+		[ "$$(shasum -a 256 "$(BASHDEPS)" | awk '{print $$1}')" = "$(BASHDEPS_SHA256)" ] || { printf '%s\n' 'bashdeps.bash digest mismatch; run make deps-docs' >&2; exit 1; }; \
+	else \
+		printf '%s\n' 'No SHA-256 verification command is available for bashdeps.bash' >&2; exit 1; \
+	fi
+
+## Synchronize documentation-only dependencies; this target may use the network.
+deps-docs: $(BASHDEPS) $(DOCS_MANIFEST)
+	$(MAKE) --no-print-directory verify-bashdeps
+	"$(BASHDEPS)" sync "$(DOCS_MANIFEST)"
+
+## Verify prepared documentation dependencies without network access or repair.
+deps-docs-check: verify-bashdeps $(DOCS_MANIFEST)
+	"$(BASHDEPS)" verify "$(DOCS_MANIFEST)"
+
+## Generate the ephemeral ADR landing page from maintained framing and ADR source.
+adr-index:
+	@test -r "$(ADRCTL)" || { printf '%s\n' 'Missing documentation dependency vendor/adrctl.bash; run make deps-docs first' >&2; exit 1; }
+	@test -r "$(ADR_INDEX_INTRO)" || { printf '%s\n' 'Missing ADR landing-page introduction' >&2; exit 1; }
+	@test -r "$(ADR_INDEX_OUTRO)" || { printf '%s\n' 'Missing ADR landing-page conclusion' >&2; exit 1; }
+	@tmp="$(ADR_INDEX_FILE).tmp"; \
+	trap 'rm -f "$$tmp"' EXIT; \
+	bash "$(ADRCTL)" generate toc -i "$(ADR_INDEX_INTRO)" -o "$(ADR_INDEX_OUTRO)" >"$$tmp"; \
+	mv "$$tmp" "$(ADR_INDEX_FILE)"; \
+	trap - EXIT
+
+## Generate stable reference documentation with bashdeps-pinned released filters.
+docs: deps-docs-check
+	$(MAKE) --no-print-directory docs-canary \
+		AWK_DOXYGEN_FILTER="$(VENDOR_AWK_FILTER)" \
+		BASH_DOXYGEN_FILTER="$(VENDOR_BASH_FILTER)"
+
+## Generate reference documentation with explicitly selected filter paths.
+docs-canary:
+	@test -f "$(AWK_DOXYGEN_FILTER)" || { printf '%s\n' 'Missing AWK Doxygen filter' >&2; exit 1; }
+	@test -f "$(BASH_DOXYGEN_FILTER)" || { printf '%s\n' 'Missing Bash Doxygen filter' >&2; exit 1; }
+	chmod 0755 "$(AWK_DOXYGEN_FILTER)" "$(BASH_DOXYGEN_FILTER)"
+	"$(AWK_BIN)" -f "$(AWK_DOXYGEN_FILTER)" -- --strict --compact "$(SOURCE_FILTER)" >/dev/null
+	awk -f "$(BASH_DOXYGEN_FILTER)" -- --strict --compact ./tests/run-tests.sh >/dev/null
+	$(MAKE) --no-print-directory adr-index
+	$(MAKE) --no-print-directory docs-clean
+	AWK_DOXYGEN_FILTER="$(abspath $(AWK_DOXYGEN_FILTER))" \
+	BASH_DOXYGEN_FILTER="$(abspath $(BASH_DOXYGEN_FILTER))" \
+		doxygen Doxyfile
+
+## Remove generated Python/Doxygen integration output.
 integration-clean:
 	rm -rf "$(INTEGRATION_OUT)"
 
-clean: integration-clean
-	rm -rf "$(DIST_DIR)" doc/reference
+## Remove generated project reference documentation.
+docs-clean:
+	rm -rf "$(REFERENCE_DOC_DIR)"
+
+clean: integration-clean docs-clean
+	rm -rf "$(DIST_DIR)"
+
+## Remove all generated build, reference, ADR-navigation, and dependency state.
+distclean: clean
+	rm -rf "$(VENDOR_DIR)"
+	rm -f "$(ADR_INDEX_FILE)"
