@@ -96,16 +96,71 @@ dist/doxygen-python.awk.sha256
 Build provenance is inserted as comments only so artifact metadata cannot change
 AWK execution semantics.
 
+## Documentation tooling
+
+The repository maintains separate paths for project reference documentation and
+for testing the Python filter itself.  `tests/doxygen/Doxyfile` exercises
+`doxygen-python.awk` against Python input.  The root `Doxyfile` documents this
+project's maintained AWK, Bash, Markdown, and ADR sources.
+
+Reference documentation uses released, SHA-256-pinned `awk-doxygen`,
+`bash-doxygen`, and `adrctl` assets declared in `dependencies-docs.txt`.  A pinned
+`bashdeps` release synchronizes those assets beneath `vendor/`.
+
+Prepare and verify documentation dependencies with:
+
+```sh
+make deps-docs
+make deps-docs-check
+```
+
+Generate the ADR landing page and project reference documentation with:
+
+```sh
+make adr-index
+make docs
+```
+
+The generated ADR landing page is `doc/adr/README.md`; generated Doxygen output
+is under `doc/reference/`.  Those paths and `vendor/` are disposable generated
+state and are ignored by Git.  GitHub Pages regenerates the reference site from
+maintained source rather than committing generated HTML.
+
+## Releases and downstream dependencies
+
+Semantic-version releases publish the tested consumer artifact and its checksum:
+
+```text
+doxygen-python.awk
+doxygen-python.awk.sha256
+```
+
+These release assets are the dependency interface for downstream repositories.
+A downstream project can pin a specific `python-doxygen` version with `bashdeps`
+using the release URL and the SHA-256 digest of the published filter.  This keeps
+the consumer dependency tied to exact released bytes rather than to a moving
+branch or repository checkout.
+
+The versioning workflow validates maintained source, builds and tests the exact
+distribution artifact, generates and verifies its checksum, exercises the
+release candidate through Doxygen, publishes both assets, then downloads and
+checks the exact published bytes again.  A release canary also exercises
+published Python-filter bytes through the Python/Doxygen integration fixture.
+
 ## Documentation and governance
 
 The canonical Python documentation contract is maintained in
 `wesley-dean/coding_standards/standards/python/documentation-standard.md`.
-`doc/documentation-standard.md` records the repository's adoption point; the
-canonical file remains authoritative until dependency synchronization is added.
+`doc/documentation-standard.md` records the repository's adoption point.
 
-Before changing parser boundaries, generated representation, portability, or the
-artifact contract, review `AGENTS.md`, the documentation standards, all ADRs in
-`doc/adr/`, and `doc/decisions.md`.  Accepted ADRs govern the implementation.
+The maintained AWK filter follows the checked-in
+`doc/awk-documentation-standard.md`, whose canonical upstream is
+`wesley-dean/coding_standards/standards/awk/documentation-standard.md`.
+
+Before changing parser boundaries, generated representation, portability,
+documentation publication, or the artifact contract, review `AGENTS.md`, the
+documentation standards, all ADRs in `doc/adr/`, and `doc/decisions.md`.
+Accepted ADRs govern the implementation.
 
 ## License
 
