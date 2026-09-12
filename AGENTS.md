@@ -35,16 +35,15 @@ The AWK filter follows the authoritative AWK standard at
 
 Preserve Python-native documentation as the human- and linter-facing source of
 truth.  Do not require Doxygen-specific Python docstrings or duplicate Doxygen
-comment blocks.
+comment blocks.  ADR-002 establishes the source-preserving Doxygen representation
+based on an executable integration experiment.
 
 The filter is intentionally narrow.  Prefer false negatives and visible
 unsupported syntax to speculative semantic claims.  Do not add signature
 validation, type inference, inferred behavior, broad decorator semantics, or
 complete Python parsing without explicit governance.
 
-`:yields:` is outside milestone 1 under ADR-003.  The source-preserving Doxygen
-representation remains provisional until Proposed ADR-002 is proven by the
-integration experiment and accepted.
+`:yields:` is outside milestone 1 under ADR-003.
 
 ## Portability and Testing
 
