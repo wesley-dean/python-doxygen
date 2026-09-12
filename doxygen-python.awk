@@ -27,7 +27,20 @@ BEGIN {
 
 ## @fn leading_width(line)
 ## @brief Returns the leading indentation width of a source line.
+## @details
+## Copies the input into scratch storage before removing everything after the
+## leading spaces and tabs.  The caller-supplied value is not modified.
+##
 ## @param line Source line to inspect.
+## @local s Scratch copy used while measuring indentation.
+##
+## @par STDIN
+## Nothing is read directly from STDIN.
+## @par STDOUT
+## Nothing is written to STDOUT.
+## @par STDERR
+## Nothing is written to STDERR.
+##
 ## @returns Number of leading space and tab bytes.
 function leading_width(line,    s) {
     s = line
@@ -37,8 +50,23 @@ function leading_width(line,    s) {
 
 ## @fn warn(message)
 ## @brief Records and emits one translation diagnostic.
+## @details
+## Increments the global diagnostic count and writes one location-qualified
+## warning for the current input record.
+##
 ## @param message Stable diagnostic text.
-## @returns No meaningful value.
+##
+## @par STDIN
+## Nothing is read directly from STDIN.
+## @par STDOUT
+## Nothing is written to STDOUT.
+## @par STDERR
+## Writes one warning containing the current file name and record number.
+##
+## @par Side Effects
+## Increments the global `diagnostics` counter.
+##
+## @returns No meaningful value; callers use the function for its side effects.
 function warn(message) {
     diagnostics++
     printf "%s:%d: warning: %s\n", FILENAME, FNR, message > "/dev/stderr"
@@ -46,7 +74,20 @@ function warn(message) {
 
 ## @fn is_blank_or_comment(line)
 ## @brief Tests for input that may precede a suite's first statement.
+## @details
+## Removes leading horizontal whitespace from a scratch copy and then checks
+## whether the remaining input is empty or begins with a comment marker.
+##
 ## @param line Source line to inspect.
+## @local s Scratch copy used while testing the source line.
+##
+## @par STDIN
+## Nothing is read directly from STDIN.
+## @par STDOUT
+## Nothing is written to STDOUT.
+## @par STDERR
+## Nothing is written to STDERR.
+##
 ## @returns One for blank or comment-only input; zero otherwise.
 function is_blank_or_comment(line,    s) {
     s = line
@@ -56,7 +97,20 @@ function is_blank_or_comment(line,    s) {
 
 ## @fn is_declaration(line)
 ## @brief Recognizes milestone-1 class and function declaration headers.
+## @details
+## Removes leading horizontal whitespace from a scratch copy and recognizes only
+## the conservative declaration forms governed by milestone 1.
+##
 ## @param line Source line to inspect.
+## @local s Scratch copy used while testing the declaration syntax.
+##
+## @par STDIN
+## Nothing is read directly from STDIN.
+## @par STDOUT
+## Nothing is written to STDOUT.
+## @par STDERR
+## Nothing is written to STDERR.
+##
 ## @returns One for a supported declaration header; zero otherwise.
 function is_declaration(line,    s) {
     s = line
@@ -66,7 +120,20 @@ function is_declaration(line,    s) {
 
 ## @fn starts_docstring(line)
 ## @brief Tests for an unprefixed triple-double-quoted string start.
+## @details
+## Removes leading horizontal whitespace from a scratch copy and checks only the
+## exact unprefixed delimiter form supported by milestone 1.
+##
 ## @param line Source line to inspect.
+## @local s Scratch copy used while testing the opening delimiter.
+##
+## @par STDIN
+## Nothing is read directly from STDIN.
+## @par STDOUT
+## Nothing is written to STDOUT.
+## @par STDERR
+## Nothing is written to STDERR.
+##
 ## @returns One when the first non-whitespace bytes open the supported form.
 function starts_docstring(line,    s) {
     s = line
@@ -76,7 +143,21 @@ function starts_docstring(line,    s) {
 
 ## @fn closes_same_line(line)
 ## @brief Tests whether a recognized docstring closes on its opening line.
+## @details
+## Removes leading horizontal whitespace, verifies the opening delimiter, and
+## searches the remainder of the line for a second supported delimiter.
+##
 ## @param line Recognized docstring start line.
+## @local s Scratch copy used while validating the opening delimiter.
+## @local rest Source text following the opening delimiter.
+##
+## @par STDIN
+## Nothing is read directly from STDIN.
+## @par STDOUT
+## Nothing is written to STDOUT.
+## @par STDERR
+## Nothing is written to STDERR.
+##
 ## @returns One when a second delimiter occurs on the line; zero otherwise.
 function closes_same_line(line,    s, rest) {
     s = line
@@ -88,7 +169,25 @@ function closes_same_line(line,    s, rest) {
 
 ## @fn translate_doc_line(line)
 ## @brief Translates one supported structured field inside a docstring.
+## @details
+## Preserves indentation, recognizes only governed Sphinx field forms, and
+## returns the original line whenever no safe translation exists.  Malformed
+## governed fields are diagnosed and left unchanged.
+##
 ## @param line Physical docstring line to inspect.
+## @local indent Leading horizontal whitespace preserved in translated output.
+## @local body Docstring content after indentation is removed.
+## @local name Parameter name extracted from a `:param` field.
+## @local desc Description extracted from a supported structured field.
+## @local exc Exception name extracted from a `:raises` field.
+##
+## @par STDIN
+## Nothing is read directly from STDIN.
+## @par STDOUT
+## Nothing is written directly to STDOUT.
+## @par STDERR
+## Malformed governed fields are reported through `warn()`.
+##
 ## @returns Translated text, or original text when no safe translation exists.
 function translate_doc_line(line,    indent, body, name, desc, exc) {
     indent = line
