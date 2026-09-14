@@ -42,7 +42,9 @@ BUILD_DATE ?= $(shell git show -s --format=%cI HEAD 2>/dev/null || printf 'unkno
 
 .PHONY: adr-index all build check checksums clean deps deps-check deps-docs deps-docs-check distclean docs docs-canary docs-clean integration-clean test test-source test-dist test-doxygen test-doxygen-dist verify-bashdeps verify-build-deps FORCE
 
-all: deps build
+## Prepare dependencies, validate generated artifacts, and produce all checksums.
+all: deps
+	$(MAKE) --no-print-directory test-dist checksums
 
 ## Build the development, ordinary, and minified consumer artifacts offline.
 build: verify-build-deps $(SOURCE_FILTER)
