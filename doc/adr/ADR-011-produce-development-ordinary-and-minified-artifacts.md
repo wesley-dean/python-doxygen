@@ -78,11 +78,11 @@ materialized beneath `vendor/` by the repository's pinned `bashdeps` bootstrap.
 The dependency SHALL pin an exact released version, public release-asset URL, and
 SHA-256 digest.  The initial governed version is `awk-minifier` v0.2.4.
 
-`make deps` MAY use the network to synchronize build dependencies.  `make
- deps-check` and `make build` SHALL NOT silently download, repair, or advance
-build dependencies.  `make build` SHALL fail clearly when the prepared pinned
-minifier dependency is unavailable or invalid.  `make all` MAY prepare pinned
-build dependencies before invoking the offline build path.
+`make deps` MAY use the network to synchronize build dependencies.  `make deps-check`
+and `make build` SHALL NOT silently download, repair, or advance build
+dependencies.  `make build` SHALL fail clearly when the prepared pinned minifier
+dependency is unavailable or invalid.  `make all` MAY prepare pinned build
+dependencies before invoking the offline build path.
 
 The semantic regression harness SHALL run against maintained source and all three
 generated artifacts.  The combined test entry point SHALL emit one TAP-compliant
