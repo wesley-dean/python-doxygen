@@ -22,16 +22,23 @@ jobs:
   semantic:
     runs-on: ubuntu-24.04
     strategy:
+      fail-fast: false
       matrix:
         awk: [mawk, gawk]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install AWK implementation
         run: sudo apt-get update && sudo apt-get install -y ${{ matrix.awk }}
-      - name: Run source and dist semantic suite
-        run: make test AWK_BIN=${{ matrix.awk }}
-      - name: Verify checksum generation
-        run: make checksums AWK_BIN=${{ matrix.awk }}
+      - name: Run complete build and generated-artifact suite
+        run: make all AWK_BIN=${{ matrix.awk }}
+      - name: Run maintained-source semantic suite
+        run: make test-source AWK_BIN=${{ matrix.awk }}
+      - name: Verify generated checksums
+        run: |
+          cd dist
+          sha256sum -c doxygen-python.dev.awk.sha256
+          sha256sum -c doxygen-python.awk.sha256
+          sha256sum -c doxygen-python.min.awk.sha256
 
   doxygen:
     runs-on: ubuntu-24.04
@@ -39,5 +46,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install integration dependencies
         run: sudo apt-get update && sudo apt-get install -y doxygen mawk
+      - name: Prepare pinned build dependencies
+        run: make deps
       - name: Exercise maintained filter through Doxygen
         run: make test-doxygen AWK_BIN=mawk
+      - name: Exercise generated artifacts through Doxygen
+        run: make test-doxygen-dist AWK_BIN=mawk

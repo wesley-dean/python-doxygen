@@ -6,6 +6,15 @@ Date: 2026-09-11
 
 Accepted
 
+## Supersession Note
+
+ADR-011 supersedes this ADR where it defines exactly one executable release
+artifact and one checksum.  ADR-011 expands the publication set to development,
+ordinary, and minified executable artifacts with individual checksums.  This ADR
+remains authoritative for exact-byte release validation, versioned downstream
+pinning, public retrieval, checksum verification, and release-artifact canary
+principles except where ADR-011 explicitly expands the asset set.
+
 ## Context
 
 ADR-004 established `dist/doxygen-python.awk` and its SHA-256 checksum as the
@@ -86,7 +95,8 @@ make unrelated repository changes.
 This decision supersedes only ADR-004's milestone-1 statement that release
 publication is outside scope.  ADR-004's maintained-source name, generated
 artifact name, checksum name, comment-only provenance requirement, and
-source/dist parity requirements remain governing.
+source/dist parity requirements remain governing subject to ADR-011's later
+expansion of the generated artifact and checksum set.
 
 ## Alternatives Considered
 
@@ -113,7 +123,8 @@ because dependency advancement is a separate reviewed repository decision.
 
 Release creation now depends on the same Make build and semantic test path used
 locally and in pull-request CI.  Consumers receive one executable AWK artifact and
-one checksum file whose bytes have been tested together.
+one checksum file whose bytes have been tested together, subject to ADR-011's
+later expansion to three executable representations and their checksums.
 
 Downstream repositories can pin an exact semantic version in their `bashdeps`
 manifest and reproduce the same dependency bytes later using only the public
@@ -136,3 +147,5 @@ ADR review.
 - ADR-005 requires the same semantic suite to exercise maintained and generated
   bytes.
 - ADR-006 governs the shared Make and documentation infrastructure.
+- ADR-011 expands this ADR's release asset set while preserving its exact-byte
+  publication and downstream pinning model.

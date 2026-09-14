@@ -45,7 +45,7 @@ jobs:
       - name: Verify generated documentation state
         run: |
           test -f doc/adr/README.md
-          grep -F 'ADR-007' doc/adr/README.md
+          grep -F 'ADR-011' doc/adr/README.md
           git check-ignore -q doc/adr/README.md
           test -z "$(git status --porcelain --untracked-files=all -- doc/adr/README.md)"
           test -f doc/reference/index.html
@@ -67,29 +67,35 @@ jobs:
           sudo apt-get update
           sudo apt-get install --yes curl doxygen make mawk
 
-      - name: Download exact released Python filter and checksum
+      - name: Download exact released Python artifacts and checksums
         env:
           RELEASE_TAG: ${{ github.event.release.tag_name }}
           REPOSITORY: ${{ github.repository }}
         run: |
           mkdir -p .release-canary
           base="https://github.com/${REPOSITORY}/releases/download/${RELEASE_TAG}"
-          curl --fail --location --silent --show-error \
-            --retry 5 --retry-all-errors --retry-delay 2 \
-            "${base}/doxygen-python.awk" \
-            --output .release-canary/doxygen-python.awk
-          curl --fail --location --silent --show-error \
-            --retry 5 --retry-all-errors --retry-delay 2 \
-            "${base}/doxygen-python.awk.sha256" \
-            --output .release-canary/doxygen-python.awk.sha256
+          for artifact in doxygen-python.dev.awk doxygen-python.awk doxygen-python.min.awk; do
+            curl --fail --location --silent --show-error \
+              --retry 5 --retry-all-errors --retry-delay 2 \
+              "${base}/${artifact}" \
+              --output ".release-canary/${artifact}"
+            curl --fail --location --silent --show-error \
+              --retry 5 --retry-all-errors --retry-delay 2 \
+              "${base}/${artifact}.sha256" \
+              --output ".release-canary/${artifact}.sha256"
+          done
 
-      - name: Verify released Python filter bytes
+      - name: Verify released Python artifact bytes
         run: |
           cd .release-canary
+          sha256sum -c doxygen-python.dev.awk.sha256
           sha256sum -c doxygen-python.awk.sha256
+          sha256sum -c doxygen-python.min.awk.sha256
 
-      - name: Exercise exact released Python filter through Doxygen
+      - name: Exercise exact released Python artifacts through Doxygen
         run: |
-          make test-doxygen \
-            AWK_BIN=mawk \
-            DOXYGEN_PYTHON_FILTER=.release-canary/doxygen-python.awk
+          for artifact in doxygen-python.dev.awk doxygen-python.awk doxygen-python.min.awk; do
+            make test-doxygen \
+              AWK_BIN=mawk \
+              DOXYGEN_PYTHON_FILTER=".release-canary/${artifact}"
+          done
