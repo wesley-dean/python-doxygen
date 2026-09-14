@@ -9,8 +9,11 @@ Accepted
 ## Supersession Note
 
 ADR-007 supersedes only this ADR's milestone-1 deferral of release publication.
-The maintained-source name, generated artifact name, checksum name, comment-only
-provenance requirement, and source/dist parity requirements remain governing.
+ADR-011 supersedes this ADR where it defines one generated artifact and one
+checksum, expanding that boundary to development, ordinary, and minified
+artifacts with individual checksums.  The maintained-source name, generated-state
+model, comment-only provenance principle, and source/artifact parity requirements
+remain governing except where ADR-011 explicitly expands them.
 
 ## Context
 
@@ -52,3 +55,5 @@ considered usable.
 - ADR-000 governs capability claims.
 - ADR-005 requires source and dist parity in the regression suite.
 - ADR-007 governs release publication and exact released-artifact validation.
+- ADR-011 expands the generated artifact and checksum set while preserving this
+  ADR's underlying source/artifact boundary.
