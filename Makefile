@@ -139,11 +139,12 @@ test-doxygen-dist: build
 		$(MAKE) --no-print-directory test-doxygen AWK_BIN="$(AWK_BIN)" DOXYGEN_PYTHON_FILTER="$$artifact"; \
 	done
 
-## Generate SHA-256 checksums for every generated artifact.
-checksums: build $(DIST_CHECKSUMS)
-
-$(DIST_DIR)/%.awk.sha256: $(DIST_DIR)/%.awk
-	cd "$(DIST_DIR)" && sha256sum "$(notdir $<)" >"$(notdir $@)"
+## Generate SHA-256 checksums after all executable artifacts have been built.
+checksums: build
+	@for artifact in $(DIST_FILTERS); do \
+		name=$${artifact##*/}; \
+		(cd "$(DIST_DIR)" && sha256sum "$$name" >"$$name.sha256"); \
+	done
 
 FORCE:
 
