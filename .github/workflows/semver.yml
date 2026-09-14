@@ -29,7 +29,7 @@ jobs:
       - name: Install release validation tools
         run: |
           sudo apt-get update
-          sudo apt-get install --yes doxygen mawk
+          sudo apt-get install --yes doxygen mawk gawk
 
       - name: calculate version
         id: calculate-version
@@ -40,7 +40,7 @@ jobs:
           tag_prefix: v
 
       - name: Validate maintained source
-        run: make test-source AWK_BIN=mawk
+        run: make check test-source AWK_BIN=mawk
 
       - name: Build and validate release artifact
         run: |
