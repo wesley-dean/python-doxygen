@@ -110,20 +110,26 @@ Run GNU awk's fatal lint mode against maintained root AWK sources with:
 make check
 ```
 
-Linting is intentionally separate from semantic testing.  Run the semantic suite
-against maintained source and generated consumer bytes with:
+Linting is intentionally separate from semantic testing.  Prepare the pinned
+build dependency and run the semantic suite against maintained source and every
+generated executable artifact with:
 
 ```sh
+make deps
 make test AWK_BIN=mawk
 make test AWK_BIN=gawk
 ```
 
-The semantic harness emits one TAP-compliant stream for every filter selected by
-the Make target.  `make test-source` and `make test-dist` remain available for
-focused source-only or distribution-only validation.
+The semantic harness emits one TAP-compliant stream for every selected filter.
+`make test-source` remains source-only, while `make test-dist` validates the
+three generated variants together.
 
-CI runs GNU awk linting, both supported semantic AWK implementations, and a
-Doxygen integration job.  Build the consumer artifact and checksum with:
+`awk-minifier` is an explicit build dependency pinned in `dependencies.txt` and
+materialized beneath `vendor/` by the repository's pinned `bashdeps` bootstrap.
+`make deps` may use the network.  `make deps-check` and `make build` consume
+prepared dependency state without silently downloading or advancing it.
+
+Build all generated forms and their checksums with:
 
 ```sh
 make build
@@ -133,12 +139,24 @@ make checksums
 The generated files are:
 
 ```text
+dist/doxygen-python.dev.awk
+dist/doxygen-python.dev.awk.sha256
 dist/doxygen-python.awk
 dist/doxygen-python.awk.sha256
+dist/doxygen-python.min.awk
+dist/doxygen-python.min.awk.sha256
 ```
 
-Build provenance is inserted as comments only so artifact metadata cannot change
-AWK execution semantics.
+The development artifact preserves the maintained body, the ordinary artifact
+removes full-line comments while retaining the established consumer filename,
+and the minified artifact is produced with the pinned `awk-minifier` release.
+Build provenance is generated separately and inserted as comments in every
+artifact so representation changes cannot erase provenance or add executable AWK
+state.
+
+CI runs GNU awk linting, the semantic suite under both supported AWK
+implementations, checksum verification for all generated artifacts, and Doxygen
+integration against maintained source and all three generated release candidates.
 
 ## Documentation tooling
 
@@ -148,8 +166,10 @@ for testing the Python filter itself.  `tests/doxygen/Doxyfile` exercises
 project's maintained AWK, Bash, Markdown, and ADR sources.
 
 Reference documentation uses released, SHA-256-pinned `awk-doxygen`,
-`bash-doxygen`, and `adrctl` assets declared in `dependencies-docs.txt`.  A pinned
-`bashdeps` release synchronizes those assets beneath `vendor/`.
+`bash-doxygen`, and `adrctl` assets declared in `dependencies-docs.txt`.  These are
+separate from the build dependency in `dependencies.txt`.  A pinned `bashdeps`
+release synchronizes both dependency sets beneath `vendor/` through their
+respective Make targets.
 
 Prepare and verify documentation dependencies with:
 
@@ -172,26 +192,32 @@ maintained source rather than committing generated HTML.
 
 ## Releases and downstream dependencies
 
-Semantic-version releases publish the tested consumer artifact and its checksum:
+Semantic-version releases publish all three tested executable representations and
+their individual checksums:
 
 ```text
+doxygen-python.dev.awk
+doxygen-python.dev.awk.sha256
 doxygen-python.awk
 doxygen-python.awk.sha256
+doxygen-python.min.awk
+doxygen-python.min.awk.sha256
 ```
 
-These release assets are the dependency interface for downstream repositories.
-A downstream project pins a specific `python-doxygen` version in its `bashdeps`
-manifest using that version's public release-asset URL and the SHA-256 digest of
-the published filter.  During the downstream build, `bashdeps` downloads those
-exact public bytes and verifies the digest before use.  Consumption therefore
-requires neither version discovery nor GitHub authentication.
+The ordinary `doxygen-python.awk` asset remains the default compatibility path.
+A downstream project may instead select the development or minified form and pin
+that exact asset in its `bashdeps` manifest using a specific release version,
+public release-asset URL, and SHA-256 digest.  During the downstream build,
+`bashdeps` retrieves those exact public bytes and verifies the digest before use.
+Consumption therefore requires neither version discovery nor GitHub
+authentication.
 
-The versioning workflow validates maintained source, builds and tests the exact
-distribution artifact, generates and verifies its checksum, exercises the
-release candidate through Doxygen, and publishes both files as release assets.
-A release-artifact canary may independently download the public released files,
-verify the checksum, and exercise the Python filter through the same Doxygen
-integration fixture.
+The versioning workflow validates maintained source, builds and semantically tests
+all three generated artifacts, exercises each release candidate through Doxygen,
+generates and verifies all three checksums, and publishes all six files as release
+assets.  A release-artifact canary may independently download public released
+files, verify checksums, and exercise the selected Python filter through the same
+Doxygen integration fixture.
 
 ## Documentation and governance
 
@@ -206,7 +232,8 @@ The maintained AWK filter follows the checked-in
 Before changing parser boundaries, generated representation, portability,
 documentation publication, or the artifact contract, review `AGENTS.md`, the
 documentation standards, all ADRs in `doc/adr/`, and `doc/decisions.md`.
-Accepted ADRs govern the implementation.
+Accepted ADRs govern the implementation.  ADR-011 governs the development,
+ordinary, and minified distribution contract.
 
 ## License
 
