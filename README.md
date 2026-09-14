@@ -129,10 +129,20 @@ materialized beneath `vendor/` by the repository's pinned `bashdeps` bootstrap.
 `make deps` may use the network.  `make deps-check` and `make build` consume
 prepared dependency state without silently downloading or advancing it.
 
-Build all generated forms and their checksums with:
+Run the complete build path with:
+
+```sh
+make all
+```
+
+`make all` synchronizes the pinned build dependency, builds all three generated
+AWK forms, runs the TAP semantic suite against each generated artifact, and
+creates all three SHA-256 files.  When dependency state is already prepared, the
+same stages remain available individually:
 
 ```sh
 make build
+make test-dist
 make checksums
 ```
 
