@@ -31,6 +31,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install --yes doxygen mawk gawk
 
+      - name: Prepare pinned build dependencies
+        run: make deps
+
       - name: calculate version
         id: calculate-version
         uses: bitshifted/git-auto-semver@c4e8f005e839f822325356f141939cf6c76b5701 # pin@v1
@@ -42,24 +45,27 @@ jobs:
       - name: Validate maintained source
         run: make check test-source AWK_BIN=mawk
 
-      - name: Build and validate release artifact
+      - name: Build and validate release artifacts
         run: |
           make test-dist \
             AWK_BIN=mawk \
             VERSION="${{ steps.calculate-version.outputs.version-string }}"
 
-      - name: Exercise release candidate through Doxygen
+      - name: Exercise release candidates through Doxygen
         run: |
-          make test-doxygen \
+          make test-doxygen-dist \
             AWK_BIN=mawk \
-            DOXYGEN_PYTHON_FILTER=dist/doxygen-python.awk
+            VERSION="${{ steps.calculate-version.outputs.version-string }}"
 
-      - name: Generate and verify release checksum
+      - name: Generate and verify release checksums
         run: |
           make checksums \
+            AWK_BIN=mawk \
             VERSION="${{ steps.calculate-version.outputs.version-string }}"
           cd dist
+          sha256sum -c doxygen-python.dev.awk.sha256
           sha256sum -c doxygen-python.awk.sha256
+          sha256sum -c doxygen-python.min.awk.sha256
 
       - name: Generate release notes
         id: release-notes
@@ -79,5 +85,9 @@ jobs:
           draft: false
           prerelease: false
           files: |
+            dist/doxygen-python.dev.awk
+            dist/doxygen-python.dev.awk.sha256
             dist/doxygen-python.awk
             dist/doxygen-python.awk.sha256
+            dist/doxygen-python.min.awk
+            dist/doxygen-python.min.awk.sha256
