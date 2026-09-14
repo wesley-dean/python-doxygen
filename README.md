@@ -104,15 +104,26 @@ validate whether annotations should have been used instead.
 
 ## Tests and build artifacts
 
-Run the semantic suite against maintained source and generated consumer bytes:
+Run GNU awk's fatal lint mode against maintained root AWK sources with:
+
+```sh
+make check
+```
+
+Linting is intentionally separate from semantic testing.  Run the semantic suite
+against maintained source and generated consumer bytes with:
 
 ```sh
 make test AWK_BIN=mawk
 make test AWK_BIN=gawk
 ```
 
-CI runs both implementations and a Doxygen integration job.  Build the consumer
-artifact and checksum with:
+The semantic harness emits one TAP-compliant stream for every filter selected by
+the Make target.  `make test-source` and `make test-dist` remain available for
+focused source-only or distribution-only validation.
+
+CI runs GNU awk linting, both supported semantic AWK implementations, and a
+Doxygen integration job.  Build the consumer artifact and checksum with:
 
 ```sh
 make build

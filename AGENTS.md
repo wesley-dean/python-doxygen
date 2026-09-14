@@ -56,7 +56,10 @@ Behavior-focused fixtures live under `tests/python/`.  Fixtures protect public
 behavior, not helper structure.  The same semantic suite must run against
 maintained `doxygen-python.awk` and generated `dist/doxygen-python.awk`.
 
-Use `make test AWK_BIN=mawk` and `make test AWK_BIN=gawk`.  Preserve source-line
+Run `make check` to apply GNU awk fatal linting to maintained root AWK sources.
+Linting remains intentionally separate from semantic testing.  Use
+`make test AWK_BIN=mawk` and `make test AWK_BIN=gawk`; the test harness emits one
+TAP-compliant stream across all selected filter variants.  Preserve source-line
 correspondence where practical, and pass ordinary Python source outside translated
 docstrings through unchanged.  `make test-doxygen` exercises the selected Python
 filter against the focused Python/Doxygen integration fixture.

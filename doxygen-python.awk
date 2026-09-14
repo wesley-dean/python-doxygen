@@ -307,51 +307,51 @@ function translate_doc_line(line,    indent, body, name, desc, exc) {
 ## @rule translate_source_record
 ## @brief Passes source through and translates fields in recognized docstrings.
 {
-    line = $0
+    source_line = $0
     if (in_docstring) {
-        if (index(line, "\"\"\"") > 0) { in_docstring = 0; print line; next }
-        print translate_doc_line(line)
+        if (index(source_line, "\"\"\"") > 0) { in_docstring = 0; print source_line; next }
+        print translate_doc_line(source_line)
         next
     }
     if (in_declaration) {
-        if (declaration_header_complete(line)) {
+        if (declaration_header_complete(source_line)) {
             in_declaration = 0
             pending_suite = 1
             pending_indent = declaration_indent
         }
-        print line
+        print source_line
         next
     }
     if (pending_suite) {
-        if (is_blank_or_comment(line)) { print line; next }
-        if (leading_width(line) > pending_indent && starts_docstring(line)) {
+        if (is_blank_or_comment(source_line)) { print source_line; next }
+        if (leading_width(source_line) > pending_indent && starts_docstring(source_line)) {
             pending_suite = 0
-            if (!closes_same_line(line)) in_docstring = 1
-            print line
+            if (!closes_same_line(source_line)) in_docstring = 1
+            print source_line
             next
         }
         pending_suite = 0
     }
     if (module_doc_possible) {
-        if (is_blank_or_comment(line)) { print line; next }
-        if (leading_width(line) == 0 && starts_docstring(line)) {
+        if (is_blank_or_comment(source_line)) { print source_line; next }
+        if (leading_width(source_line) == 0 && starts_docstring(source_line)) {
             module_doc_possible = 0
-            if (!closes_same_line(line)) in_docstring = 1
-            print line
+            if (!closes_same_line(source_line)) in_docstring = 1
+            print source_line
             next
         }
-        if (leading_width(line) == 0) module_doc_possible = 0
+        if (leading_width(source_line) == 0) module_doc_possible = 0
     }
-    if (is_declaration_start(line)) {
-        declaration_indent = leading_width(line)
-        if (declaration_header_complete(line)) {
+    if (is_declaration_start(source_line)) {
+        declaration_indent = leading_width(source_line)
+        if (declaration_header_complete(source_line)) {
             pending_suite = 1
             pending_indent = declaration_indent
         } else {
             in_declaration = 1
         }
     }
-    print line
+    print source_line
 }
 
 ## @rule finalize_filter
