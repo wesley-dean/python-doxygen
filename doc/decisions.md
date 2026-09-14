@@ -119,5 +119,8 @@ full-line comments while retaining the established filename, and the minified
 artifact is produced by a pinned, digest-verified `awk-minifier` release.  Build
 provenance is generated outside those transformations, all three variants are
 covered by semantic and Doxygen validation, and all three are published with
-individual SHA-256 checksums.  See
+individual SHA-256 checksums.  The top-level `make all` path prepares the pinned
+build dependency as needed, TAP-tests the three generated executable forms, and
+leaves all six governed build artifacts in `dist/`; `make build` remains the
+offline artifact-generation primitive.  See
 [ADR-011](adr/ADR-011-produce-development-ordinary-and-minified-artifacts.md).
