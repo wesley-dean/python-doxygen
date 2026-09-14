@@ -28,13 +28,12 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install AWK implementation
         run: sudo apt-get update && sudo apt-get install -y ${{ matrix.awk }}
-      - name: Prepare pinned build dependencies
-        run: make deps
-      - name: Run source and generated-artifact semantic suite
-        run: make test AWK_BIN=${{ matrix.awk }}
-      - name: Verify checksum generation
+      - name: Run complete build and generated-artifact suite
+        run: make all AWK_BIN=${{ matrix.awk }}
+      - name: Run maintained-source semantic suite
+        run: make test-source AWK_BIN=${{ matrix.awk }}
+      - name: Verify generated checksums
         run: |
-          make checksums AWK_BIN=${{ matrix.awk }}
           cd dist
           sha256sum -c doxygen-python.dev.awk.sha256
           sha256sum -c doxygen-python.awk.sha256
