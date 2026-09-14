@@ -10,6 +10,15 @@ permissions:
   contents: read
 
 jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install GNU awk
+        run: sudo apt-get update && sudo apt-get install -y gawk
+      - name: Lint maintained AWK sources
+        run: make check
+
   semantic:
     runs-on: ubuntu-24.04
     strategy:
