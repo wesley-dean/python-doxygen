@@ -233,10 +233,10 @@ Doxygen integration fixture.
 
 The canonical Python documentation contract is maintained in
 `wesley-dean/coding_standards/standards/python/documentation-standard.md`.
-`doc/documentation-standard.md` records the repository's adoption point.
+`doc/standards/python/documentation-standard.md` records the repository's adoption point.
 
 The maintained AWK filter follows the checked-in
-`doc/awk-documentation-standard.md`, whose canonical upstream is
+`doc/standards/awk/documentation-standard.md`, whose canonical upstream is
 `wesley-dean/coding_standards/standards/awk/documentation-standard.md`.
 
 Before changing parser boundaries, generated representation, portability,
@@ -258,3 +258,13 @@ Contributions are welcome.  See [CONTRIBUTING.md](CONTRIBUTING.md) and
 ## Author
 
 - Wes Dean
+
+## Shared Coding Standards
+
+This repository adopts the complete pinned `coding_standards@v1.0.9` snapshot under `doc/standards/`; `.codingstandardrc` records its verified release digest.  Applicable imported standards are governing requirements unless an accepted local ADR or explicit policy refines them.  Presence does not imply applicability, examples remain illustrative, imported standards are not edited locally, and upgrades are reviewed repository changes rather than automatic synchronization.
+
+Authoritative shared documentation standards used here:
+
+- Python: `doc/standards/python/documentation-standard.md`
+- AWK: `doc/standards/awk/documentation-standard.md`
+
