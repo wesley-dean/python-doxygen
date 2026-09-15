@@ -13,7 +13,7 @@ ADRs.
 ## Governing Documentation
 
 Before changing the repository, review `README.md`, this file,
-`doc/documentation-standard.md`, `doc/awk-documentation-standard.md`, every ADR
+`doc/standards/python/documentation-standard.md`, `doc/standards/awk/documentation-standard.md`, every ADR
 in `doc/adr/*.md`, and `doc/decisions.md`.
 
 Accepted ADRs are governance.  Consequential parser, interface, portability,
@@ -24,10 +24,10 @@ unless existing governance already covers the decision.
 
 The authoritative Python standard is
 `wesley-dean/coding_standards/standards/python/documentation-standard.md`.
-`doc/documentation-standard.md` records this repository's adoption point.  Do
+`doc/standards/python/documentation-standard.md` records this repository's adoption point.  Do
 not independently rewrite or weaken the canonical Python contract here.
 
-Maintained AWK source follows `doc/awk-documentation-standard.md`, the checked-in
+Maintained AWK source follows `doc/standards/awk/documentation-standard.md`, the checked-in
 AWK documentation standard supplied for this repository.  Its canonical upstream
 is `wesley-dean/coding_standards/standards/awk/documentation-standard.md`.
 Documentation changes to `doxygen-python.awk` must preserve executable behavior
@@ -128,3 +128,13 @@ Keep changes surgical and reviewable.  Accuracy is more important than apparent
 completeness.  Distinguish implemented behavior from planned behavior, state
 uncertainty explicitly, and do not widen the parser boundary without governance
 and focused fixtures.
+
+## Shared Coding Standards
+
+This repository adopts the complete pinned `coding_standards@v1.0.9` snapshot under `doc/standards/`; `.codingstandardrc` records its verified release digest.  Applicable imported standards are governing requirements unless an accepted local ADR or explicit policy refines them.  Presence does not imply applicability, examples remain illustrative, imported standards are not edited locally, and upgrades are reviewed repository changes rather than automatic synchronization.
+
+Authoritative shared documentation standards used here:
+
+- Python: `doc/standards/python/documentation-standard.md`
+- AWK: `doc/standards/awk/documentation-standard.md`
+

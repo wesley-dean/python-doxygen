@@ -563,7 +563,7 @@ Relevant state includes:
 * `NR` and `FNR`;
 * `FILENAME`;
 * `FS` and `OFS`;
-* `RS` and `ORS``;
+* `RS` and `ORS`;
 * `SUBSEP`; and
 * implementation-specific record-related variables when explicitly supported.
 

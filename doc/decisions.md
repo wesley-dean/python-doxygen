@@ -124,3 +124,19 @@ build dependency as needed, TAP-tests the three generated executable forms, and
 leaves all six governed build artifacts in `dist/`; `make build` remains the
 offline artifact-generation primitive.  See
 [ADR-011](adr/ADR-011-produce-development-ordinary-and-minified-artifacts.md).
+
+## ADR-012: Adopt shared coding standards
+
+**Status:** Accepted
+
+The repository adopts the complete verified `coding_standards@v1.0.9` snapshot
+beneath `doc/standards/`, with exact release provenance recorded in
+`.codingstandardrc`.  Applicable imported standards govern where relevant while
+accepted repository-specific ADRs and explicit local policy retain precedence for
+intentional refinements; presence in the snapshot does not itself imply
+applicability.  Duplicate live documentation-standard files are removed where
+present so shared documentation rules have one authoritative managed path, while
+historical ADR text remains unchanged.  Future standards upgrades replace the
+complete snapshot through normal review rather than local edits or automatic
+synchronization.  See
+[ADR-012](adr/ADR-012-adopt-shared-coding-standards.md).
