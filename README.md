@@ -261,10 +261,14 @@ Contributions are welcome.  See [CONTRIBUTING.md](CONTRIBUTING.md) and
 
 ## Shared Coding Standards
 
-This repository adopts the complete pinned `coding_standards@v2.1.0` snapshot under `doc/standards/`; `.codingstandardrc` records its verified release digest.  Applicable imported standards are governing requirements unless an accepted local ADR or explicit policy refines them.  Presence does not imply applicability, examples remain illustrative, imported standards are not edited locally, and upgrades are reviewed repository changes rather than automatic synchronization.
+This repository adopts the complete pinned `coding_standards@v3.2.0` snapshot under `doc/standards/`; `.codingstandardrc` records its verified release digest.  Applicable imported standards are governing requirements unless an accepted local ADR or explicit policy refines them.  Presence does not imply applicability, examples remain illustrative, imported standards are not edited locally, and upgrades are reviewed repository changes rather than automatic synchronization.
 
 Authoritative shared documentation standards used here:
 
 - Python: `doc/standards/python/documentation-standard.md`
 - AWK: `doc/standards/awk/documentation-standard.md`
 
+
+## Dependabot Maintenance
+
+Routine GitHub Actions dependency version updates remain weekly with a seven-day cooldown. Eligible major, minor, and patch versions can be grouped under `actions-version-updates`; security updates remain independent. Groups containing a major upgrade require targeted manual review and are excluded from the existing non-major-only auto-merge path. Existing Dependabot PRs are not presumed superseded. See [ADR-013](doc/adr/ADR-013-consolidate-github-actions-dependabot-maintenance.md).

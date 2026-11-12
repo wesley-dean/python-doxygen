@@ -129,7 +129,7 @@ offline artifact-generation primitive.  See
 
 **Status:** Accepted
 
-The repository adopts the complete verified `coding_standards@v2.1.0` snapshot
+The repository currently pins the complete verified `coding_standards@v3.2.0` snapshot
 beneath `doc/standards/`, with exact release provenance recorded in
 `.codingstandardrc`.  Applicable imported standards govern where relevant while
 accepted repository-specific ADRs and explicit local policy retain precedence for
@@ -140,3 +140,14 @@ historical ADR text remains unchanged.  Future standards upgrades replace the
 complete snapshot through normal review rather than local edits or automatic
 synchronization.  See
 [ADR-012](adr/ADR-012-adopt-shared-coding-standards.md).
+
+## ADR-013: Consolidate GitHub Actions Dependabot Version Updates
+
+Routine GitHub Actions version updates retain their weekly schedule and seven-day
+cooldown, but a wildcard group now permits eligible major, minor, and patch
+upgrades to appear together. Dependabot security updates remain separate; a
+major-containing group requires targeted manual review and remains outside the
+existing non-major auto-merge path. No Python filter behavior, source parsing,
+release artifact, or documentation compatibility contract is changed.
+
+See [ADR-013](adr/ADR-013-consolidate-github-actions-dependabot-maintenance.md).
