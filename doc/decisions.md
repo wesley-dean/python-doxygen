@@ -151,3 +151,16 @@ existing non-major auto-merge path. No Python filter behavior, source parsing,
 release artifact, or documentation compatibility contract is changed.
 
 See [ADR-013](adr/ADR-013-consolidate-github-actions-dependabot-maintenance.md).
+
+### ADR-014: Migrate Routine Dependency Updates to Central Renovate
+
+Scheduled routine GitHub Actions version updates move from Dependabot
+to the existing Jenkins-hosted Renovate service, explicitly enrolled
+through `renovate.json`. Dependabot security alerts and updates remain
+independent; immutable verified action pins, required CI, and human
+code-owner review remain protected. ADR-014 partially supersedes
+ADR-013's scheduled routine provider and PR-retirement policy while
+retaining its security and supply-chain constraints. Effective Jenkins
+execution and any follow-up pin restoration require separate verification.
+
+See [ADR-014](adr/ADR-014-migrate-routine-dependency-updates-to-renovate.md).
